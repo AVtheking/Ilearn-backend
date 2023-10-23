@@ -4,8 +4,8 @@ const bcryptjs = require("bcryptjs");
 const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("../middlewares/errro");
-const authSchema = require("../utils/validator");
-const { User, Otp } = require("../models");
+const { authSchema } = require("../utils/validator");
+const { User, Otp } = require("../models"); 
 require("dotenv").config();
 
 const authCtrl = {

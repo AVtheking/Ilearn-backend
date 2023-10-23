@@ -1,9 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 
-const authRouter = require("./routes/authRouter");
 const { errorMiddleware } = require("./middlewares/errro");
-const teacherRouter = require("./routes/teacherRoute");
+
+const { authRouter, teacherRouter } = require("./routes");
 
 require("dotenv").config();
 
