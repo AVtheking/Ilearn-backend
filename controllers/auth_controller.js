@@ -2,18 +2,22 @@ const User = require("../models/user_model");
 const validator = require("validator");
 const bcryptjs = require("bcryptjs");
 const Otp = require("../models/otp_model");
-const { default: sendmail } = require("../utils/mailer");
+const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
 
 const authCtrl = {
   signUp: async (req, res) => {
     try {
       const { username, email, password } = req.body;
-      if (!username || email || password) {
+      if (!username || !email || !password) {
         return res.status(400).json({ msg: "Please enter all fields" });
       }
       if (!validator.isEmail(email)) {
         return res.status(400).json({ msg: "invalid Email" });
+      }
+      let existingOtp = await Otp.findOne({ email });
+      if (existingOtp) {
+        await Otp.deleteOne({ email });
       }
       let existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -53,8 +57,8 @@ const authCtrl = {
       if (otp != OTP?.otp || !OTP) {
         return res.status(500).json({ msg: "Invalid otp" });
       }
-      await User.findByIdAndUpdate(
-        email,
+      await User.findOneAndUpdate(
+        { email },
         {
           isEmailVerified: true,
         },
@@ -82,7 +86,13 @@ const authCtrl = {
       }
       const token = jwt.sign({ id: user._id }, "passwordKey");
       console.log(token);
-      res.json({ token, ...user._doc });
+      res.json({
+        token,
+        username: user.username,
+        email,
+        isEmailVerified: user.isEmailVerified,
+        type: user.type,
+      });
     } catch (e) {
       res.status(500).json({ error: e.message });
     }
@@ -127,8 +137,8 @@ const authCtrl = {
       const { email, newPassword } = req.body;
 
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
-      await User.findByIdAndUpdate(
-        email,
+      await User.findOneAndUpdate(
+        { email },
         { password: hashedPassword },
         { new: true }
       );
@@ -138,4 +148,4 @@ const authCtrl = {
     }
   },
 };
-                                                                                                                                
+module.exports = authCtrl;
