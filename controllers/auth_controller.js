@@ -10,13 +10,6 @@ require("dotenv").config();
 const authCtrl = {
   signUp: async (req, res, next) => {
     try {
-      //   const { username, email, password } = req.body;
-      //   if (!username || !email || !password) {
-      //     return next(new ErrorHandler(400, "Please Enter all fields"));
-      //   }
-      //   if (!validator.isEmail(email)) {
-      //     return next(new ErrorHandler(400,"Invalid Email"));
-      //   }
       const result = await authSchema.validateAsync(req.body);
       console.log(result);
       const username = result.username;
@@ -56,7 +49,16 @@ const authCtrl = {
       }
       user = await user.save();
       OTP = await OTP.save();
-      res.status(201).json(user);
+      res.status(201).json({
+        success: "true",
+        message: "Sign up successful! Please verify your account.",
+        data: {
+          username,
+          email,
+          verify: user.verify,
+          role: user.role,
+        },
+      });
     } catch (err) {
       if (err.isJoi == true) {
         err.statusCode = 422;
@@ -80,7 +82,7 @@ const authCtrl = {
         { new: true }
       );
       await Otp.deleteOne({ email });
-      res.json({ msg: "Email is verified" });
+      res.json({ success: "true", message: "Email is verified" });
     } catch (e) {
       next(e);
     }
@@ -105,11 +107,15 @@ const authCtrl = {
       const token = jwt.sign({ id: user._id }, process.env.USER);
       console.log(token);
       res.json({
-        token,
-        username: user.username,
-        email,
-        verify: user.verify,
-        role: user.role,
+        success: "true",
+        message: "User signed successfully",
+        data: {
+          token,
+          username: user.username,
+          email,
+          verify: user.verify,
+          role: user.role,
+        },
       });
     } catch (e) {
       //   res.status(500).json({ error: e.message });
@@ -137,7 +143,10 @@ const authCtrl = {
       });
       OTP = await OTP.save();
       sendmail(email, otp);
-      res.json({ msg: "otp is send to your registered email" });
+      res.json({
+        success: "true",
+        message: "otp is send to your registered email",
+      });
     } catch (e) {
       //   res.status(500).json({ error: e.message });
       next(e);
@@ -159,7 +168,7 @@ const authCtrl = {
         { verify: true },
         { new: true }
       );
-      res.json({ msg: "otp is validated" });
+      res.json({ success: "true", message: "otp is validated" });
     } catch (e) {
       //   res.status(500).json({ error: e.message });
       next(e);
@@ -179,7 +188,10 @@ const authCtrl = {
         { password: hashedPassword },
         { new: true }
       );
-      res.json({ msg: "password has been changed successfully" });
+      res.json({
+        success: "true",
+        message: "password has been changed successfully",
+      });
     } catch (e) {
       //   res.status(500).json({ error: e.message });
       next(e);
