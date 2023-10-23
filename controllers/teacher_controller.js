@@ -4,7 +4,7 @@ const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
     try {
       const { email } = req.body;
-      // let user = await User.findOne({ email });
+   
       await User.findOneAndUpdate(
         {
           email,
