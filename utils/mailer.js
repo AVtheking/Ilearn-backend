@@ -1,4 +1,4 @@
-const nodemailer = requrie("nodemailer");
+const nodemailer = require("nodemailer");
 require("dotenv").config;
 const sendmail = async (email, otp) => {
   const transporter = nodemailer.createTransport({
@@ -16,7 +16,6 @@ const sendmail = async (email, otp) => {
     subject: "Email verification code",
     text: `Your OTP is ${otp}`,
   };
-  console.log("here");
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -27,4 +26,4 @@ const sendmail = async (email, otp) => {
   });
 };
 
-export default sendmail;
+module.exports = sendmail;
