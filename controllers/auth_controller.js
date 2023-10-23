@@ -52,7 +52,7 @@ const authCtrl = {
       });
       const type = req.header("x-user-role");
       if (type == "teacher") {
-        user.type = "teacher";
+        user.role = "teacher";
       }
       user = await user.save();
       OTP = await OTP.save();
