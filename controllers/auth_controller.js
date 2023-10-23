@@ -29,7 +29,7 @@ const authCtrl = {
       }
       let existingUser = await User.findOne({ email });
       if (existingUser) {
-        if (!existingUser.isEmailVerified) {
+        if (!existingUser.verify) {
           await User.deleteOne({ email });
         } else {
           return next(
@@ -75,7 +75,7 @@ const authCtrl = {
       await User.findOneAndUpdate(
         { email },
         {
-          isEmailVerified: true,
+          verify: true,
         },
         { new: true }
       );
@@ -98,7 +98,7 @@ const authCtrl = {
         // return res.status(401).json({ msg: "Incorrect password" });
         return next(new ErrorHandler(401, "Incorrect password"));
       }
-      if (!user.isEmailVerified) {
+      if (!user.verify) {
         // return res.status(401).json({ msg: "Email is not verified" });
         return next(new ErrorHandler(401, "Email is not verified"));
       }
@@ -108,8 +108,8 @@ const authCtrl = {
         token,
         username: user.username,
         email,
-        isEmailVerified: user.isEmailVerified,
-        type: user.type,
+        verify: user.verify,
+        role: user.role,
       });
     } catch (e) {
       //   res.status(500).json({ error: e.message });
@@ -119,11 +119,13 @@ const authCtrl = {
   forgetPassword: async (req, res, next) => {
     try {
       const { email } = req.body;
-      const user = await User.findOne({ email });
+      let user = await User.findOne({ email });
       if (!user) {
         // return res.status(400).json({ error: "This email is not registered" });
         return next(new ErrorHandler(400, "This email is not registered"));
       }
+      user.verify = false;
+      user = await user.save();
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
       if (existingOtp) {
@@ -150,6 +152,13 @@ const authCtrl = {
         return next(new ErrorHandler(400, "Invalid otp"));
       }
       await Otp.deleteOne({ email });
+      await User.findOneAndUpdate(
+        {
+          email,
+        },
+        { verify: true },
+        { new: true }
+      );
       res.json({ msg: "otp is validated" });
     } catch (e) {
       //   res.status(500).json({ error: e.message });
@@ -159,9 +168,10 @@ const authCtrl = {
   changePassword: async (req, res, next) => {
     try {
       const { email, newPassword } = req.body;
-      let otp = await Otp.findOne({ email });
-      if (otp) {
-        return next(new ErrorHandler(400, "Otp is not verified"));
+
+      let user = await User.findOne({ email });
+      if (!user.verify) {
+        return next(new ErrorHandler(403, "Please Verify Your Email First"));
       }
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
       await User.findOneAndUpdate(

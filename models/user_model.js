@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  isEmailVerified: {
+  verify: {
     type: Boolean,
     default: false,
   },
@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
-  
 });
 const User = new mongoose.model("users", userSchema);
 module.exports = User;
