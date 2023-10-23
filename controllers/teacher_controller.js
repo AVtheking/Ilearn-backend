@@ -12,7 +12,11 @@ const teacherCtrl = {
         { role: "teacher" },
         { new: true }
       );
-    } catch (error) {
+      res.json({
+        success: "true",
+        message: "You have successfully become educator",
+      });
+    } catch (error) { 
       next(error);
     }
   },
