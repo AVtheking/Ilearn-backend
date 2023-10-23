@@ -130,8 +130,6 @@ const authCtrl = {
         // return res.status(400).json({ error: "This email is not registered" });
         return next(new ErrorHandler(400, "This email is not registered"));
       }
-      user.verify = false;
-      user = await user.save();
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
       if (existingOtp) {
@@ -143,6 +141,8 @@ const authCtrl = {
       });
       OTP = await OTP.save();
       sendmail(email, otp);
+      user.verify = false;
+      user = await user.save();
       res.json({
         success: "true",
         message: "otp is send to your registered email",
