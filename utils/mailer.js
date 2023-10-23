@@ -16,7 +16,6 @@ const sendmail = async (email, otp) => {
     subject: "Email verification code",
     text: `Your OTP is ${otp}`,
   };
-  console.log("here");
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {

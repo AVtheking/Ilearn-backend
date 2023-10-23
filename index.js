@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 
 const authRouter = require("./routes/authRouter");
+const { errorMiddleware } = require("./middlewares/errro");
 
 require("dotenv").config();
 
@@ -9,7 +10,8 @@ const app = express();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(authRouter);
+app.use(errorMiddleware);
+app.use(authRouter, errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 

@@ -75,6 +75,7 @@
     "is-fullwidth-code-point": "^3.0.0",
     "is-glob": "^4.0.3",
     "is-number": "^7.0.0",
+    "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "kareem": "^2.5.1",
     "lru-cache": "^6.0.0",
