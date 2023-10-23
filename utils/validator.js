@@ -5,5 +5,13 @@ const authSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
+const teacherSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
 
-module.exports = authSchema;
+module.exports = {
+  authSchema,
+  teacherSchema,
+};

@@ -5,22 +5,15 @@ const bcryptjs = require("bcryptjs");
 const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("../middlewares/errro");
-const authSchema = require("../utils/validator");
-const { User, Otp } = require("../models");
+const { teacherSchema } = require("../utils/validator");
+const { Teacher, Otp } = require("../models");
 
-const authCtrl = {
+const teacherCtrl = {
   signUp: async (req, res, next) => {
     try {
-      //   const { username, email, password } = req.body;
-      //   if (!username || !email || !password) {
-      //     return next(new ErrorHandler(400, "Please Enter all fields"));
-      //   }
-      //   if (!validator.isEmail(email)) {
-      //     return next(new ErrorHandler(400,"Invalid Email"));
-      //   }
-      const result = await authSchema.validateAsync(req.body);
+      const result = await teacherSchema.validateAsync(req.body);
       console.log(result);
-      const username = result.username;
+      const name = result.name;
       const email = result.email;
       const password = result.password;
 
@@ -28,17 +21,18 @@ const authCtrl = {
       if (existingOtp) {
         await Otp.deleteOne({ email });
       }
-      let existingUser = await User.findOne({ email });
-      if (existingUser) {
-        if (!existingUser.isEmailVerified) {
-          await User.deleteOne({ email });
+
+      let existingTeacher = await Teacher.findOne({ email });
+      if (existingTeacher) {
+        if (!existingTeacher.isEmailVerified) {
+          await Teacher.deleteOne({ email });
         } else {
           return next(
-            new ErrorHandler(400, "User with the same email already exists")
+            new ErrorHandler(400, "Teacher with the same email already exists")
           );
         }
       }
-      const hashedPassword = await bcryptjs.hash(result.password, 8);
+      const hashedPassword = await bcryptjs.hash(password, 8);
       const otp = Math.floor(100000 + Math.random() * 900000);
       let OTP = new Otp({
         email,
@@ -46,18 +40,15 @@ const authCtrl = {
       });
       sendmail(result.email, otp);
 
-      let user = new User({
-        username,
+      let teacher = new Teacher({
+        name,
         email,
         password: hashedPassword,
       });
-      const type = req.header("x-user-type");
-      if (type == "teacher") {
-        user.type = "teacher";
-      }
-      user = await user.save();
+
+      teacher = await teacher.save();
       OTP = await OTP.save();
-      res.status(201).json(user);
+      res.status(201).json(teacher);
     } catch (err) {
       if (err.isJoi == true) {
         err.statusCode = 422;
@@ -73,7 +64,7 @@ const authCtrl = {
       if (otp != OTP?.otp || !OTP) {
         return next(new ErrorHandler(400, "Invalid otp"));
       }
-      await User.findOneAndUpdate(
+      await Teacher.findOneAndUpdate(
         { email },
         {
           isEmailVerified: true,
@@ -89,28 +80,27 @@ const authCtrl = {
   signIn: async (req, res, next) => {
     try {
       const { email, password } = req.body;
-      let user = await User.findOne({ email });
-      if (!user) {
+      let teacher = await Teacher.findOne({ email });
+      if (!teacher) {
         // return res.status(400).json({ msg: "No user exists with this email" });
         return next(new ErrorHandler(400, "No user exists with this email "));
       }
-      const isMatch = await bcryptjs.compare(password, user.password);
+      const isMatch = await bcryptjs.compare(password, teacher.password);
       if (!isMatch) {
         // return res.status(401).json({ msg: "Incorrect password" });
         return next(new ErrorHandler(401, "Incorrect password"));
       }
-      if (!user.isEmailVerified) {
+      if (!teacher.isEmailVerified) {
         // return res.status(401).json({ msg: "Email is not verified" });
         return next(new ErrorHandler(401, "Email is not verified"));
       }
-      const token = jwt.sign({ id: user._id }, "passwordKey");
+      const token = jwt.sign({ id: teacher._id }, "passwordKey");
       console.log(token);
       res.json({
         token,
-        username: user.username,
+        name: teacher.name,
         email,
-        isEmailVerified: user.isEmailVerified,
-        type: user.type,
+        isEmailVerified: teacher.isEmailVerified,
       });
     } catch (e) {
       //   res.status(500).json({ error: e.message });
@@ -120,8 +110,8 @@ const authCtrl = {
   forgetPassword: async (req, res, next) => {
     try {
       const { email } = req.body;
-      const user = await User.findOne({ email });
-      if (!user) {
+      const teacher = await Teacher.findOne({ email });
+      if (!teacher) {
         // return res.status(400).json({ error: "This email is not registered" });
         return next(new ErrorHandler(400, "This email is not registered"));
       }
@@ -162,7 +152,7 @@ const authCtrl = {
       const { email, newPassword } = req.body;
 
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
-      await User.findOneAndUpdate(
+      await Teacher.findOneAndUpdate(
         { email },
         { password: hashedPassword },
         { new: true }
@@ -174,4 +164,4 @@ const authCtrl = {
     }
   },
 };
-module.exports = authCtrl;
+module.exports = teacherCtrl;
