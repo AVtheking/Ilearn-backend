@@ -5,7 +5,7 @@ const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("../middlewares/errro");
 const { authSchema } = require("../utils/validator");
-const { User, Otp } = require("../models"); 
+const { User, Otp } = require("../models");
 require("dotenv").config();
 
 const authCtrl = {
@@ -51,7 +51,7 @@ const authCtrl = {
         email,
         password: hashedPassword,
       });
-      const type = req.header("x-user-type");
+      const type = req.header("x-user-role");
       if (type == "teacher") {
         user.type = "teacher";
       }
