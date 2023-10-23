@@ -1,12 +1,12 @@
-// const User = require("../models/user_model");
 const validator = require("validator");
 const bcryptjs = require("bcryptjs");
-// const Otp = require("../models/otp_model");
+
 const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("../middlewares/errro");
 const authSchema = require("../utils/validator");
 const { User, Otp } = require("../models");
+require("dotenv").config();
 
 const authCtrl = {
   signUp: async (req, res, next) => {
@@ -103,7 +103,7 @@ const authCtrl = {
         // return res.status(401).json({ msg: "Email is not verified" });
         return next(new ErrorHandler(401, "Email is not verified"));
       }
-      const token = jwt.sign({ id: user._id }, "passwordKey");
+      const token = jwt.sign({ id: user._id }, process.env.USER);
       console.log(token);
       res.json({
         token,
