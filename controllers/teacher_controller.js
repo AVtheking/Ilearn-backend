@@ -17,3 +17,4 @@ const teacherCtrl = {
     }
   },
 };
+module.exports = teacherCtrl;
