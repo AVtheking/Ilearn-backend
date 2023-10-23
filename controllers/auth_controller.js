@@ -1,4 +1,3 @@
-const validator = require("validator");
 const bcryptjs = require("bcryptjs");
 
 const sendmail = require("../utils/mailer");
@@ -38,7 +37,7 @@ const authCtrl = {
           );
         }
       }
-      const hashedPassword = await bcryptjs.hash(result.password, 8);
+      const hashedPassword = await bcryptjs.hash(password, 8);
       const otp = Math.floor(100000 + Math.random() * 900000);
       let OTP = new Otp({
         email,
@@ -160,7 +159,10 @@ const authCtrl = {
   changePassword: async (req, res, next) => {
     try {
       const { email, newPassword } = req.body;
-
+      let otp = await Otp.findOne({ email });
+      if (otp) {
+        return next(new ErrorHandler(400, "Otp is not verified"));
+      }
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
       await User.findOneAndUpdate(
         { email },
