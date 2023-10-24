@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 
-const { errorMiddleware } = require("./middlewares/errro");
+const { errorMiddleware } = require("./middlewares/error");
 
 const { authRouter } = require("./routes");
 

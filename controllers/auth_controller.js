@@ -2,7 +2,7 @@ const bcryptjs = require("bcryptjs");
 
 const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
-const { ErrorHandler } = require("../middlewares/errro");
+const { ErrorHandler } = require("../middlewares/error");
 const { authSchema } = require("../utils/validator");
 const { User, Otp } = require("../models");
 require("dotenv").config();
@@ -180,7 +180,7 @@ const authCtrl = {
 
       let user = await User.findOne({ email });
       if (!user.verify) {
-        return next(new ErrorHandler(403, "Please Verify Your Email First"));
+        return next(new ErrorHandler(403, "Please verify with otp first"));
       }
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
       await User.findOneAndUpdate(
