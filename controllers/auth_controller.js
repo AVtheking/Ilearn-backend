@@ -74,14 +74,14 @@ const authCtrl = {
       if (otp != OTP?.otp || !OTP) {
         return next(new ErrorHandler(400, "Invalid otp"));
       }
-      await User.findOneAndUpdate(
+       User.findOneAndUpdate(
         { email },
         {
           verify: true,
         },
-        { new: true }
+      
       );
-      await Otp.deleteOne({ email });
+       Otp.deleteOne({ email });
       res.json({ success: "true", message: "Email is verified" });
     } catch (e) {
       next(e);
@@ -160,13 +160,13 @@ const authCtrl = {
         // return res.status(400).json({ msg: "Invalid otp" });
         return next(new ErrorHandler(400, "Invalid otp"));
       }
-      await Otp.deleteOne({ email });
-      await User.findOneAndUpdate(
+       Otp.deleteOne({ email });
+       User.findOneAndUpdate(
         {
           email,
         },
         { verify: true },
-        { new: true }
+       
       );
       res.json({ success: "true", message: "otp is validated" });
     } catch (e) {
@@ -183,10 +183,10 @@ const authCtrl = {
         return next(new ErrorHandler(403, "Please verify with otp first"));
       }
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
-      await User.findOneAndUpdate(
+       User.findOneAndUpdate(
         { email },
         { password: hashedPassword },
-        { new: true }
+        
       );
       res.json({
         success: "true",
