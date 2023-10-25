@@ -13,7 +13,7 @@ module.exports = {
 
     return res.status(err.statusCode).json({
       success: false,
-      msg: err.message,
+      message: err.message,
     });
   },
   ErrorHandler,
