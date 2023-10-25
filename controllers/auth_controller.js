@@ -1,5 +1,4 @@
 const bcryptjs = require("bcryptjs");
-
 const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("../middlewares/error");
@@ -87,6 +86,7 @@ const authCtrl = {
       next(e);
     }
   },
+  
   signIn: async (req, res, next) => {
     try {
       const { email, password } = req.body;
@@ -105,7 +105,7 @@ const authCtrl = {
         return next(new ErrorHandler(401, "Email is not verified"));
       }
       const token = jwt.sign({ id: user._id }, process.env.USER);
-      console.log(token);
+      // console.log(token);
       res.json({
         success: "true",
         message: "User signed successfully",
@@ -122,6 +122,7 @@ const authCtrl = {
       next(e);
     }
   },
+
   forgetPassword: async (req, res, next) => {
     try {
       const { email } = req.body;
@@ -152,6 +153,7 @@ const authCtrl = {
       next(e);
     }
   },
+
   verifyOtp: async (req, res, next) => {
     try {
       const { email, otp } = req.body;
@@ -174,6 +176,41 @@ const authCtrl = {
       next(e);
     }
   },
+
+  resendOtp: async (req, res, next) => {
+    try {
+      // console.log("req.body", req.body);
+      const { email } = req.body;
+      let user = await User.findOne({ email });
+
+      if (!user) {
+        return next(new ErrorHandler(400, "User with this email does not exist"));
+      }
+
+      const otp = Math.floor(1000 + Math.random() * 9000);
+      let existingOtp = await Otp.findOne({ email });
+
+      if (existingOtp) {
+        await existingOtp.updateOne({ otp });
+      } else {
+        const newOtp = new Otp({
+          email,
+          otp,
+        });
+        await newOtp.save();
+      }
+      // console.log('otp', otp);
+      sendmail(email, otp);
+
+      res.json({
+        success: "true",
+        message: "New OTP has been sent to your registered email",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+
   changePassword: async (req, res, next) => {
     try {
       const { email, newPassword } = req.body;
@@ -197,5 +234,5 @@ const authCtrl = {
       next(e);
     }
   },
-};
+}
 module.exports = authCtrl;
