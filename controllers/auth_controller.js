@@ -23,6 +23,7 @@ const authCtrl = {
       if (existingOtp) {
         existingOtp.updateOne({
           otp,
+          createdAt: new Date(),
         });
       } else {
         let OTP = new Otp({
@@ -155,7 +156,7 @@ const authCtrl = {
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
       if (existingOtp) {
-        await existingOtp.updateOne({ otp });
+        await existingOtp.updateOne({ otp, createdAt: new Date() });
       } else {
         let newOtp = new Otp({
           email,
@@ -209,7 +210,7 @@ const authCtrl = {
       let existingOtp = await Otp.findOne({ email });
 
       if (existingOtp) {
-        await existingOtp.updateOne({ otp, createdAt: Date.now });
+        await existingOtp.updateOne({ otp, createdAt: new Date() });
       } else {
         const newOtp = new Otp({
           email,
