@@ -12,6 +12,8 @@ const authCtrl = {
       const result = await authSchema.validateAsync(req.body);
       console.log(result);
       const username = result.username;
+      const firstname = result.firstname;
+      const lastname = result.lastname;
       const email = result.email;
       const password = result.password;
 
@@ -52,6 +54,8 @@ const authCtrl = {
         let user = new User({
          
           username,
+          firstname,
+          lastname,
           email,
           password: hashedPassword,
         });
