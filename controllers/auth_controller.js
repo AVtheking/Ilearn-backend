@@ -16,10 +16,6 @@ const authCtrl = {
       const name = result.name;
       const email = result.email;
       const password = result.password;
-      let exsitingUsername = await User.findOne({ username });
-      if (exsitingUsername) {
-        return next(new ErrorHandler(400, "This username already exists"));
-      }
 
       const hashedPassword = await bcryptjs.hash(password, 8);
       const otp = Math.floor(1000 + Math.random() * 9000);
@@ -50,6 +46,10 @@ const authCtrl = {
           );
         }
       } else {
+        let exsitingUsername = await User.findOne({ username });
+        if (exsitingUsername) {
+          return next(new ErrorHandler(400, "This username already exists"));
+        }
         let user = new User({
           username,
           name,
@@ -98,7 +98,11 @@ const authCtrl = {
 
   signIn: async (req, res, next) => {
     try {
-      const { email, password } = req.body;
+      // const { email, password } = req.body;
+      const result = await authSchema.validateAsync(req.body);
+      const email = result.email;
+      const password = result.passowrd;
+
       let user = await User.findOne({ email });
       if (!user) {
         return next(new ErrorHandler(400, "No user exists with this email "));
