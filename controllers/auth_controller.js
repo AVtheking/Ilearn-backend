@@ -209,7 +209,7 @@ const authCtrl = {
       let existingOtp = await Otp.findOne({ email });
 
       if (existingOtp) {
-        await existingOtp.updateOne({ otp });
+        await existingOtp.updateOne({ otp, createdAt: Date.now });
       } else {
         const newOtp = new Otp({
           email,
