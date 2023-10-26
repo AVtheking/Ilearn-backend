@@ -148,6 +148,9 @@ const authCtrl = {
       if (!user) {
         return next(new ErrorHandler(400, "This email is not registered"));
       }
+      if (!user.verify) {
+        return next(new ErrorHandler(400, "Email not registered"));
+      }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
