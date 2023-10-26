@@ -217,11 +217,11 @@ const authCtrl = {
       const { email } = req.body;
       let user = await User.findOne({ email });
 
-      if (!user) {
-        return next(
-          new ErrorHandler(400, "User with this email does not exist")
-        );
-      }
+      // if (!user) {
+      //   return next(
+      //     new ErrorHandler(400, "User with this email does not exist")
+      //   );
+      // }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
