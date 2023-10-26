@@ -126,6 +126,7 @@ const authCtrl = {
         data: {
           token,
           username: user.username,
+          name: user.name,
           email,
           verify: user.verify,
           role: user.role,
@@ -196,13 +197,6 @@ const authCtrl = {
   resendOtp: async (req, res, next) => {
     try {
       const { email } = req.body;
-      let user = await User.findOne({ email });
-
-      if (!user) {
-        return next(
-          new ErrorHandler(400, "User with this email does not exist")
-        );
-      }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
@@ -230,21 +224,18 @@ const authCtrl = {
 
   changePassword: async (req, res, next) => {
     try {
-      const { email, token, newPassword } = req.body;
-
+      const { newPassword } = req.body;
+      const token = req.header("auth-token");
       const verified = jwt.verify(token, process.env.RESET);
       if (!verified) {
         return next(new ErrorHandler(400, "Please verify otp first"));
       }
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
       const uid = shortid.generate();
-      await User.findOneAndUpdate(
-        { email },
-        {
-          shortId: uid,
-          password: hashedPassword,
-        }
-      );
+      await User.findByIdAndUpdate(verified.id, {
+        shortId: uid,
+        password: hashedPassword,
+      });
       res.json({
         success: true,
         message: "password has been changed successfully",
