@@ -166,7 +166,7 @@ const authCtrl = {
         message: "otp is send to your registered email",
       });
     } catch (e) {
-      //   res.status(500).json({ error: e.message });
+     
       next(e);
     }
   },
