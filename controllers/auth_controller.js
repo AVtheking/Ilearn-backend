@@ -98,14 +98,14 @@ const authCtrl = {
 
   signIn: async (req, res, next) => {
     try {
-      // const { email, password } = req.body;
-      const result = await authSchema.validateAsync(req.body);
-      const email = result.email;
-      const password = result.passowrd;
+      const { email, password } = req.body;
+      // const result = await authSchema.validateAsync(req.body);
+      // const email = result.email;
+      // const password = result.passowrd;
 
       let user = await User.findOne({ email });
       if (!user) {
-        return next(new ErrorHandler(400, "No user exists with this email "));
+        return next(new ErrorHandler(400, "No user found "));
       }
       const isMatch = await bcryptjs.compare(password, user.password);
       if (!isMatch) {
