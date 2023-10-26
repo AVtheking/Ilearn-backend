@@ -10,7 +10,7 @@ const teacherCtrl = {
           email,
         },
         { role: "teacher" },
-        { new: true }
+   
       );
       res.json({
         success: "true",

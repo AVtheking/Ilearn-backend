@@ -131,6 +131,7 @@
     "set-blocking": "^2.0.0",
     "set-function-length": "^1.1.1",
     "setprototypeof": "^1.2.0",
+    "shortid": "^2.2.16",
     "side-channel": "^1.0.4",
     "sift": "^16.0.1",
     "signal-exit": "^3.0.7",
