@@ -209,8 +209,13 @@ const authCtrl = {
       let existingOtp = await Otp.findOne({ email });
 
       if (existingOtp) {
-        await existingOtp.updateOne({ otp, createdAt: new Date() });
-      } else {
+       // await existingOtp.updateOne({ otp, createdAt: new Date() });
+        if( Date.now() - existingOtp.createdAt >= 60000){
+          await existingOtp.updateOne({  $set: { otp , createdAt : Date.now()}});
+        }else {
+          return next(new ErrorHandler(400, "60 seconds not completed"));
+        }
+       } else {
         const newOtp = new Otp({
           email,
           otp,
