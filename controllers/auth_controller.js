@@ -193,7 +193,6 @@ const authCtrl = {
         success: true,
         message: "otp is validated",
         data: {
-          userId: user._id,
           token,
         },
       });
