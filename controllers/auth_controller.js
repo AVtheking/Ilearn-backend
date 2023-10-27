@@ -32,7 +32,6 @@ const authCtrl = {
         });
         await OTP.save();
       }
-      sendmail(result.email, otp);
       let existingUser = await User.findOne({ email });
       if (existingUser) {
         if (!existingUser.verify) {
@@ -61,6 +60,7 @@ const authCtrl = {
         user.save();
       }
 
+      sendmail(result.email, otp);
       res.status(201).json({
         success: true,
         message: "Sign up successful! Please verify your account.",
