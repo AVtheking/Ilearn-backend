@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("../middlewares/error");
 const { authSchema } = require("../utils/validator");
 const { User, Otp } = require("../models");
+const shortid = require("shortid");
 require("dotenv").config();
 
 const authCtrl = {
@@ -12,15 +13,9 @@ const authCtrl = {
       const result = await authSchema.validateAsync(req.body);
       console.log(result);
       const username = result.username;
-      const firstname = result.firstname;
-      const lastname = result.lastname;
+      const name = result.name;
       const email = result.email;
       const password = result.password;
-
-      // let existingOtp = await Otp.findOne({ email });
-      // if (existingOtp) {
-      //   await Otp.deleteOne({ email });
-      // }
 
       const hashedPassword = await bcryptjs.hash(password, 8);
       const otp = Math.floor(1000 + Math.random() * 9000);
@@ -28,6 +23,7 @@ const authCtrl = {
       if (existingOtp) {
         existingOtp.updateOne({
           otp,
+          createdAt: new Date(),
         });
       } else {
         let OTP = new Otp({
@@ -36,7 +32,6 @@ const authCtrl = {
         });
         await OTP.save();
       }
-      sendmail(result.email, otp);
       let existingUser = await User.findOne({ email });
       if (existingUser) {
         if (!existingUser.verify) {
@@ -51,11 +46,13 @@ const authCtrl = {
           );
         }
       } else {
+        let exsitingUsername = await User.findOne({ username });
+        if (exsitingUsername) {
+          return next(new ErrorHandler(400, "This username already exists"));
+        }
         let user = new User({
-         
           username,
-          firstname,
-          lastname,
+          name,
           email,
           password: hashedPassword,
         });
@@ -63,8 +60,7 @@ const authCtrl = {
         user.save();
       }
 
-      // user = await user.save();
-      // OTP = OTP.save();
+      sendmail(result.email, otp);
       res.status(201).json({
         success: true,
         message: "Sign up successful! Please verify your account.",
@@ -104,10 +100,13 @@ const authCtrl = {
   signIn: async (req, res, next) => {
     try {
       const { email, password } = req.body;
+      // const result = await authSchema.validateAsync(req.body);
+      // const email = result.email;
+      // const password = result.passowrd;
+
       let user = await User.findOne({ email });
       if (!user) {
-        // return res.status(400).json({ msg: "No user exists with this email" });
-        return next(new ErrorHandler(400, "No user exists with this email "));
+        return next(new ErrorHandler(400, "No user found "));
       }
       const isMatch = await bcryptjs.compare(password, user.password);
       if (!isMatch) {
@@ -115,10 +114,14 @@ const authCtrl = {
         return next(new ErrorHandler(401, "Incorrect password"));
       }
       if (!user.verify) {
-        // return res.status(401).json({ msg: "Email is not verified" });
         return next(new ErrorHandler(401, "Email is not verified"));
       }
-      const token = jwt.sign({ id: user._id }, process.env.USER, {
+      const shortId = user.shortId;
+      const payload = {
+        id: user._id,
+        uid: shortId,
+      };
+      const token = jwt.sign(payload, process.env.USER, {
         expiresIn: "2d",
       });
       // console.log(token);
@@ -128,13 +131,13 @@ const authCtrl = {
         data: {
           token,
           username: user.username,
+          name: user.name,
           email,
           verify: user.verify,
           role: user.role,
         },
       });
     } catch (e) {
-      //   res.status(500).json({ error: e.message });
       next(e);
     }
   },
@@ -144,14 +147,16 @@ const authCtrl = {
       const { email } = req.body;
       let user = await User.findOne({ email });
       if (!user) {
-        // return res.status(400).json({ error: "This email is not registered" });
         return next(new ErrorHandler(400, "This email is not registered"));
+      }
+      if (!user.verify) {
+        return next(new ErrorHandler(400, "Email not registered"));
       }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
       if (existingOtp) {
-        await existingOtp.updateOne({ otp });
+        await existingOtp.updateOne({ otp, createdAt: new Date() });
       } else {
         let newOtp = new Otp({
           email,
@@ -166,7 +171,6 @@ const authCtrl = {
         message: "otp is send to your registered email",
       });
     } catch (e) {
-      //   res.status(500).json({ error: e.message });
       next(e);
     }
   },
@@ -176,7 +180,6 @@ const authCtrl = {
       const { email, otp } = req.body;
       let OTP = await Otp.findOne({ email });
       if (otp != OTP?.otp) {
-        // return res.status(400).json({ msg: "Invalid otp" });
         return next(new ErrorHandler(400, "Invalid otp"));
       }
       Otp.deleteOne({ email });
@@ -186,56 +189,41 @@ const authCtrl = {
       });
       console.log(token);
 
-      // let token = await Token.findOne({ userId: user._id });
-      // if (token) {
-      //   await token.deleteOne();
-      // }
-      // let resetToken = crypto.randomBytes(32).toString("hex");
-      // const hash = await bcryptjs.hash(resetToken, 8);
-      // await new Token({
-      //   userId: user._id,
-      //   token: hash,
-      // }).save();
-
       res.json({
         success: true,
         message: "otp is validated",
         data: {
-          userId: user._id,
           token,
         },
       });
     } catch (e) {
-      //   res.status(500).json({ error: e.message });
       next(e);
     }
   },
 
   resendOtp: async (req, res, next) => {
     try {
-      // console.log("req.body", req.body);
       const { email } = req.body;
-      let user = await User.findOne({ email });
 
-      // if (!user) {
-      //   return next(
-      //     new ErrorHandler(400, "User with this email does not exist")
-      //   );
-      // }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
 
       if (existingOtp) {
-        await existingOtp.updateOne({ otp });
-      } else {
+       // await existingOtp.updateOne({ otp, createdAt: new Date() });
+        if( Date.now() - existingOtp.createdAt >= 60000){
+          await existingOtp.updateOne({  $set: { otp , createdAt : Date.now()}});
+        }else {
+          return next(new ErrorHandler(400, "60 seconds not completed"));
+        }
+       } else {
         const newOtp = new Otp({
           email,
           otp,
         });
         await newOtp.save();
       }
-      // console.log('otp', otp);
+
       sendmail(email, otp);
 
       res.json({
@@ -249,34 +237,31 @@ const authCtrl = {
 
   changePassword: async (req, res, next) => {
     try {
-      const { email, token, newPassword } = req.body;
-
-      // let user = await User.findOne({ email });
-      // if (!user.verify) {
-      //   return next(new ErrorHandler(403, "Please verify with otp first"));
-      // }
-      // let passwordResetToken = await Token.findOne({ userId });
-      // if (!passwordResetToken) {
-      //   return next(
-      //     new ErrorHandler(400, "Token is expired,please verify otp again")
-      //   );
-      // }
-      // const isValid = await bcryptjs.compare(token, passwordResetToken.token);
-      // if (!isValid) {
-      //   return next(new ErrorHandler(400, "Please verify otp first"));
-      // }
+      const { newPassword } = req.body;
+      const token = req.header("auth-token");
       const verified = jwt.verify(token, process.env.RESET);
       if (!verified) {
         return next(new ErrorHandler(400, "Please verify otp first"));
       }
       let hashedPassword = await bcryptjs.hash(newPassword, 8);
-      await User.findOneAndUpdate({ email }, { password: hashedPassword });
+      const uid = shortid.generate();
+      await User.findByIdAndUpdate(verified.id, {
+        shortId: uid,
+        password: hashedPassword,
+      });
       res.json({
         success: true,
         message: "password has been changed successfully",
       });
     } catch (e) {
-      //   res.status(500).json({ error: e.message });
+      next(e);
+    }
+  },
+  getUserData: async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user);
+      res.json({ user });
+    } catch (e) {
       next(e);
     }
   },

@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const { errorMiddleware } = require("./middlewares/error");
 
@@ -9,6 +10,13 @@ require("dotenv").config();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+    optionsSuccessStatus: 200,
+  })
+);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(errorMiddleware);
