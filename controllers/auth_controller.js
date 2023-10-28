@@ -256,5 +256,13 @@ const authCtrl = {
       next(e);
     }
   },
+  getUserData: async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user);
+      res.json({ user });
+    } catch (e) {
+      next(e);
+    }
+  },
 };
 module.exports = authCtrl;

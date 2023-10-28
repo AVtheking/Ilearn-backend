@@ -11,14 +11,6 @@ authRouter.post("/forget-password", authCtrl.forgetPassword);
 authRouter.post("/verify-otp", authCtrl.verifyOtp);
 authRouter.post("/resend-otp", authCtrl.resendOtp);
 authRouter.post("/change-password", authCtrl.changePassword);
-authRouter.get("/", auth, async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    res.json({ user });
-  } catch (e) {
-    next(e);
-  }
-});
+authRouter.get("/", auth, authCtrl.getUserData);
 
 module.exports = authRouter;
