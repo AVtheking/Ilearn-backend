@@ -205,6 +205,7 @@ const authCtrl = {
     try {
       const { email } = req.body;
 
+
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
 
