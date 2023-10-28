@@ -237,7 +237,9 @@ const authCtrl = {
   changePassword: async (req, res, next) => {
     try {
       const { newPassword } = req.body;
-      const token = req.header("auth-token");
+      let token = req.headers["authorization"];
+
+      token = token.replace(/^Bearer\s+/, "");
       const verified = jwt.verify(token, process.env.RESET);
       if (!verified) {
         return next(new ErrorHandler(400, "Please verify otp first"));

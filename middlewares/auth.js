@@ -3,10 +3,12 @@ const { ErrorHandler } = require("./error");
 const { User } = require("../models");
 const auth = async (req, res, next) => {
   try {
-    let token = req.header("auth-token");
+    let token = req.headers["authorization"];
     if (!token) {
       return next(new ErrorHandler(400, "No Token"));
     }
+
+    token = token.replace(/^Bearer\s+/, "");
     // token = token.replace(/^Bearer\s+/, "");
     jwt.verify(token, process.env.USER, async (err, payload) => {
       if (err) {
