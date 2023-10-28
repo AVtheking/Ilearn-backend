@@ -6,8 +6,9 @@ const authSchema = Joi.object({
   email: Joi.string().email().required(),
 
   password: Joi.string().min(8).alphanum().required(),
-
-
+});
+const passwordSchema = Joi.object({
+  password: Joi.string().min(8).alphanum().required(),
 });
 const teacherSchema = Joi.object({
   name: Joi.string().min(3).required(),
@@ -18,4 +19,5 @@ const teacherSchema = Joi.object({
 module.exports = {
   authSchema,
   teacherSchema,
+  passwordSchema,
 };

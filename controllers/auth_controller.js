@@ -2,7 +2,7 @@ const bcryptjs = require("bcryptjs");
 const sendmail = require("../utils/mailer");
 const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("../middlewares/error");
-const { authSchema } = require("../utils/validator");
+const { authSchema, passwordSchema } = require("../utils/validator");
 const { User, Otp } = require("../models");
 const shortid = require("shortid");
 require("dotenv").config();
@@ -236,7 +236,10 @@ const authCtrl = {
 
   changePassword: async (req, res, next) => {
     try {
-      const { newPassword } = req.body;
+      // const { newPassword } = req.body;
+      const result = await   passwordSchema.validateAsync(req.body);
+      console.log(result);
+      const newPassword = result.password;
       let token = req.headers["authorization"];
 
       token = token.replace(/^Bearer\s+/, "");
