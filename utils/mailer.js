@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config;
-const sendmail = async (email, otp) => {
+const sendmail = async (email, otp, subject) => {
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
@@ -13,10 +13,9 @@ const sendmail = async (email, otp) => {
   const mailOptions = {
     from: process.env.EMAIL,
     to: email,
-    subject: "Email verification code",
+    subject: subject,
     // text: `Your OTP is ${otp}`,
-    html: 
-    ` <p style="font-size: 16px;"> Hi there ,</p>
+    html: ` <p style="font-size: 16px;"> Hi there ,</p>
       <p style="font-size: 16px;>Thank you for using our service. To verify your identity, we have sent you a 
        one-time password (OTP).Please find your OTP below:
       </p>
@@ -28,8 +27,7 @@ const sendmail = async (email, otp) => {
        choosing our service.
       </p>
       <p style="font-size: 16px;>Best regards,</p>
-      <p style="font-size: 16px;>Team iLearn</p>  `  , 
-
+      <p style="font-size: 16px;>Team iLearn</p>  `,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {

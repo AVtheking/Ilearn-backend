@@ -60,7 +60,7 @@ const authCtrl = {
         user.save();
       }
 
-      sendmail(result.email, otp);
+      sendmail(result.email, otp, "Email verification Otp");
       res.status(201).json({
         success: true,
         message: "Sign up successful! Please verify your account.",
@@ -164,7 +164,7 @@ const authCtrl = {
         });
         await newOtp.save();
       }
-      sendmail(email, otp);
+      sendmail(email, otp, "Reset Passowrd");
 
       res.json({
         success: true,
@@ -205,18 +205,17 @@ const authCtrl = {
     try {
       const { email } = req.body;
 
-
       const otp = Math.floor(1000 + Math.random() * 9000);
       let existingOtp = await Otp.findOne({ email });
 
       if (existingOtp) {
-       // await existingOtp.updateOne({ otp, createdAt: new Date() });
-        if( Date.now() - existingOtp.createdAt >= 60000){
-          await existingOtp.updateOne({  $set: { otp , createdAt : Date.now()}});
-        }else {
+        // await existingOtp.updateOne({ otp, createdAt: new Date() });
+        if (Date.now() - existingOtp.createdAt >= 60000) {
+          await existingOtp.updateOne({ $set: { otp, createdAt: Date.now() } });
+        } else {
           return next(new ErrorHandler(400, "60 seconds not completed"));
         }
-       } else {
+      } else {
         const newOtp = new Otp({
           email,
           otp,
@@ -224,7 +223,7 @@ const authCtrl = {
         await newOtp.save();
       }
 
-      sendmail(email, otp);
+      sendmail(email, otp, "Resend Otp");
 
       res.json({
         success: true,
