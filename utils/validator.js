@@ -1,14 +1,14 @@
 const Joi = require("joi");
 
 const authSchema = Joi.object({
-  username: Joi.string().required(),
+  username: Joi.string().lowercase().required(),
   name: Joi.string().required(),
   email: Joi.string().email().required(),
 
-  password: Joi.string().min(8).alphanum().required(),
+  password: Joi.string().min(8).required(),
 });
 const passwordSchema = Joi.object({
-  password: Joi.string().min(8).alphanum().required(),
+  password: Joi.string().min(8).required(),
 });
 const teacherSchema = Joi.object({
   name: Joi.string().min(3).required(),
