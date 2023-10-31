@@ -23,7 +23,7 @@ const authCtrl = {
       if (existingOtp) {
         existingOtp.updateOne({
           otp,
-          createdAt: new Date(),
+          createdAt: new Date(),  
         });
       } else {
         let OTP = new Otp({

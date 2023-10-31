@@ -1,14 +1,18 @@
 const Joi = require("joi");
 
 const authSchema = Joi.object({
-  username: Joi.string().lowercase().required(),
-  name: Joi.string().required(),
-  email: Joi.string().email().required(),
+  username: Joi.string().lowercase().required().trim(),
+  name: Joi.string().required().trim(),
+  email: Joi.string().email().required().trim(),
 
-  password: Joi.string().min(8).required(),
+  password: Joi.string().regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!#%*?&])[A-Za-z\d@#$!%*?&]{8,}$/
+  ),
 });
 const passwordSchema = Joi.object({
-  password: Joi.string().min(8).required(),
+  password: Joi.string().regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!#%*?&])[A-Za-z\d@#$!%*?&]{8,}$/
+  ),
 });
 const teacherSchema = Joi.object({
   name: Joi.string().min(3).required(),
