@@ -4,7 +4,7 @@ const cors = require("cors");
 
 const { errorMiddleware } = require("./middlewares/error");
 
-const { authRouter } = require("./routes");
+const { authRouter, teacherRouter, courseRouter } = require("./routes");
 
 require("dotenv").config();
 
@@ -19,8 +19,11 @@ app.use(
 );
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(express.static("public"));
 app.use(errorMiddleware);
 app.use(authRouter, errorMiddleware);
+app.use(teacherRouter, errorMiddleware);
+app.use(courseRouter, errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 

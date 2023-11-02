@@ -1,5 +1,5 @@
 const { ErrorHandler } = require("../middlewares/error");
-const { User } = require("../models");
+const { User, Course, Video } = require("../models");
 
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
@@ -65,11 +65,11 @@ const teacherCtrl = {
           )
         );
       }
-      let video = new Videos({
+      let video = new Video({
         videoTitle,
         videoUrl: req.file.filename,
       });
-      Course.videos.push(video);
+      Course.videos.push(video._id);
       res.json({
         success: true,
         message: "Video uploaded successfully",
