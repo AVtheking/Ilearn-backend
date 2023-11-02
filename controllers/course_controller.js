@@ -4,7 +4,7 @@ const ErrorHandler = require("../middlewares/error");
 const courseCtrl = {
   getCourses: async (req, res, next) => {
     try {
-      const courses = await Course.find().sort("-createdAt");
+      const courses = await Course.find().sort("-createdAt").populate("Video");
       res.json({
         success: true,
         message: "list of all courses",
@@ -19,7 +19,7 @@ const courseCtrl = {
   getCoursesByCategory: async (req, res, next) => {
     try {
       const category = req.params.category;
-      const courses = await Course.find({ category });
+      const courses = await Course.find({ category }).populate("Video");
       if (!courses) {
         return next(
           new ErrorHandler(400, "No course is available with selected category")
