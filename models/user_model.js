@@ -5,9 +5,9 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   name: {
     type: String,
-    required:true
+    required: true,
   },
-  
+
   shortId: {
     type: String,
     default: shortId.generate,
@@ -31,10 +31,20 @@ const userSchema = new mongoose.Schema({
     default: "user",
   },
   profileimg: {
-    type:String
+    type: String,
   },
-  
-
+  createdCourse: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
+  ownedCourse: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
 });
-const User = new mongoose.model("users", userSchema);
+const User = new mongoose.model("User", userSchema);
 module.exports = User;
