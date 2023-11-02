@@ -32,7 +32,7 @@ const teacherCtrl = {
       let newCourse = new Course({
         title,
         description,
-        thumbnail: req.file.filename,
+        // thumbnail: req.file.filename,
         createdBy: req.user,
         category,
         price,
@@ -54,10 +54,11 @@ const teacherCtrl = {
   uploadVideo_toCourse: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
+      // const courseIdObjectId = new mongoose.Types.ObjectId(courseId);
       const { videoTitle } = req.body;
 
-      let Course = await Course.findById(courseId);
-      if (!Course) {
+      let course = await Course.findById(courseId);
+      if (!course) {
         return next(
           new ErrorHandler(
             400,
@@ -67,9 +68,11 @@ const teacherCtrl = {
       }
       let video = new Video({
         videoTitle,
-        videoUrl: req.file.filename,
+        videoUrl: "public/course_videos" + "/" + req.file.filename,
       });
-      Course.videos.push(video._id);
+      video = await video.save();
+      course.videos.push(video._id);
+      course = await course.save();
       res.json({
         success: true,
         message: "Video uploaded successfully",

@@ -17,9 +17,13 @@ app.use(
     optionsSuccessStatus: 200,
   })
 );
+app.use(express.static("public"));
+app.set("view engine", "ejs");
+app.get("/", async (req, res) => {
+  res.render("upload");
+});
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(express.static("public"));
 app.use(errorMiddleware);
 app.use(authRouter, errorMiddleware);
 app.use(teacherRouter, errorMiddleware);

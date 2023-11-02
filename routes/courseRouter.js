@@ -1,6 +1,6 @@
 const express = require("express");
 const { auth } = require("../middlewares");
-const { courseCtrl } = require("../controllers");
+const { courseCtrl, videoCtrl } = require("../controllers");
 const courseRouter = express.Router();
 
 courseRouter.get("/getCourse", auth, courseCtrl.getCourses);
@@ -10,3 +10,4 @@ courseRouter.get(
   courseCtrl.getCoursesByCategory
 );
 module.exports = courseRouter;
+courseRouter.get("/video/:courseId",  videoCtrl.streamVideo);
