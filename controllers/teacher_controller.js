@@ -22,7 +22,7 @@ const teacherCtrl = {
   },
   createCourse: async (req, res, next) => {
     try {
-      const { title, description, category, price, duration } = req.body;
+      const { title, description, category, duration } = req.body;
       const existingTitle = await Course.findOne({ title });
       if (existingTitle) {
         return next(
@@ -35,7 +35,7 @@ const teacherCtrl = {
         // thumbnail: req.file.filename,
         createdBy: req.user,
         category,
-        price,
+        
         duration,
       });
 
@@ -54,7 +54,7 @@ const teacherCtrl = {
   uploadVideo_toCourse: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
-      // const courseIdObjectId = new mongoose.Types.ObjectId(courseId);
+
       const { videoTitle } = req.body;
 
       let course = await Course.findById(courseId);
@@ -73,10 +73,28 @@ const teacherCtrl = {
       video = await video.save();
       course.videos.push(video._id);
       course = await course.save();
-     
+
       res.json({
         success: true,
         message: "Video uploaded successfully",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  publishCourse: async (req, res, next) => {
+    try {
+      const courseId = req.params.courseId;
+      const { price } = req.body;
+      const course = await Course.findByIdAndUpdate(
+        courseId,
+        { published: true, price },
+        { new: true }
+      );
+      res.json({
+        success: true,
+        message: "Course published successfully",
+        course,
       });
     } catch (e) {
       next(e);
