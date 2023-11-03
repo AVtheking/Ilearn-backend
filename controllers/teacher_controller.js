@@ -73,6 +73,7 @@ const teacherCtrl = {
       video = await video.save();
       course.videos.push(video._id);
       course = await course.save();
+     
       res.json({
         success: true,
         message: "Video uploaded successfully",

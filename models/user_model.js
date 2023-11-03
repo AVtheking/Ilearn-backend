@@ -46,5 +46,7 @@ const userSchema = new mongoose.Schema({
     },
   ],
 });
+userSchema.path("createdCourse").default([]);
+userSchema.path("ownedCourse").default([]);
 const User = new mongoose.model("User", userSchema);
 module.exports = User;
