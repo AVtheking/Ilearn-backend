@@ -43,15 +43,15 @@ const PORT = process.env.PORT || 5000;
 //socket connection here
 io.on("connection", (socket) => {
   console.log(`A socket connection to the server has been made: ${socket.id}`);
-  socket.on("message", async (message) => {
-    console.log("received a message", message);
-    const { text, userId } = message;
+  socket.on("message", async (msg) => {
+    console.log("received a message", msg);
+    const { text, userId } = msg;
     let message = new Message({
       text,
       user: userId,
     });
     message = await message.save();
-    io.emit("message", message);
+    io.emit("message", msg);
   });
 });
 
