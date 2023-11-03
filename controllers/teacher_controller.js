@@ -54,7 +54,7 @@ const teacherCtrl = {
   uploadVideo_toCourse: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
-      // const courseIdObjectId = new mongoose.Types.ObjectId(courseId);
+    
       const { videoTitle } = req.body;
 
       let course = await Course.findById(courseId);
