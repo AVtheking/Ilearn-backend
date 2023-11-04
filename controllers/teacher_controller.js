@@ -35,7 +35,7 @@ const teacherCtrl = {
         // thumbnail: req.file.filename,
         createdBy: req.user,
         category,
-        
+
         duration,
       });
 
@@ -88,7 +88,7 @@ const teacherCtrl = {
       const { price } = req.body;
       const course = await Course.findByIdAndUpdate(
         courseId,
-        { published: true, price },
+        { isPublished: true, price },
         { new: true }
       );
       res.json({

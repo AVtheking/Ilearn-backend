@@ -10,10 +10,9 @@ const courseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // thumbnail: {
-    //   type: String,
-
-    // },
+    thumbnail: {
+      type: String,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
