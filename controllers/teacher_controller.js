@@ -73,7 +73,9 @@ const teacherCtrl = {
       res.status(201).json({
         success: true,
         message: "New course has been created",
-        
+        data: {
+          courseId: newCourse._id,
+        },
       });
     } catch (e) {
       next(e);
@@ -159,6 +161,29 @@ const teacherCtrl = {
       res.json({
         success: true,
         message: "Lecture added successfully",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  removeLecture: async (req, res, next) => {
+    try {
+      const courseId = req.params.courseId;
+      const lectureId = req.params.lectureId;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "Course not found"));
+      }
+      const videoIndex = course.videos.indexOf(lectureId);
+      if (videoIndex == -1) {
+        return next(new ErrorHandler(400, "Lecture not found in the course"));
+      }
+      course.videos.splice(videoIndex, 1);
+      await course.save();
+      await Video.findByIdAndRemove(lectureId);
+      res.json({
+        success: true,
+        message: "Lecture removed successfully",
       });
     } catch (e) {
       next(e);
