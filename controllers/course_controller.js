@@ -1,4 +1,4 @@
-const { Course } = require("../models");
+const { Course, Category } = require("../models");
 const ErrorHandler = require("../middlewares/error");
 
 const courseCtrl = {
@@ -81,6 +81,43 @@ const courseCtrl = {
         message: "List of all courses with selected category",
         data: {
           courses,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getCategoriesName: async (req, res, next) => {
+    try {
+      const categories = await Category.find();
+      const categoryName = categories.map((category) => category.name);
+
+      res.json({
+        success: true,
+        message: "List of categories",
+        data: {
+          categories: categoryName,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getCategoriesData: async (req, res, next) => {
+    try {
+      const categories = await Category.find().populate({
+        path: "courses",
+        select: "_id title description category price rating duration ",
+        populate: {
+          path: "createdBy",
+          select: "_id username name",
+        },
+      });
+      res.json({
+        success: true,
+        message: "Data of all courses in particular category",
+        data: {
+          categories,
         },
       });
     } catch (e) {
