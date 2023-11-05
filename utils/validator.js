@@ -14,6 +14,9 @@ const passwordSchema = Joi.object({
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!#%*?&])[A-Za-z\d@#$!%*?&]{8,}$/
   ),
 });
+const CategorySchema = Joi.object({
+  category: Joi.string().required().trim(),
+});
 const teacherSchema = Joi.object({
   name: Joi.string().min(3).required(),
   email: Joi.string().email().required(),
@@ -24,4 +27,5 @@ module.exports = {
   authSchema,
   teacherSchema,
   passwordSchema,
+  CategorySchema,
 };
