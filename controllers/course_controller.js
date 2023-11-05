@@ -105,7 +105,14 @@ const courseCtrl = {
   },
   getCategoriesData: async (req, res, next) => {
     try {
-      const categories = await Category.find().populate("courses");
+      const categories = await Category.find().populate({
+        path: "courses",
+        select: "_id title description category price rating duration ",
+        populate: {
+          path: "createdBy",
+          select: "_id username name",
+        },
+      });
       res.json({
         success: true,
         message: "Data of all courses in particular category",
