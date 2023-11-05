@@ -1,5 +1,5 @@
 const { ErrorHandler } = require("../middlewares/error");
-const { User, Course, Video } = require("../models");
+const { User, Course, Video, Category } = require("../models");
 
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
@@ -40,6 +40,17 @@ const teacherCtrl = {
       });
 
       newCourse = await newCourse.save();
+      let existingCategory = await Category.findOne({ category });
+      if (existingCategory) {
+        existingCategory.courses.push(newCourse._id);
+        existingCategory = await existingCategory.save();
+      } else {
+        newCategory = new Category({
+          name: category,
+          courses: [newCourse._id],
+        });
+        newCategory = await newCategory.save();
+      }
       res.status(201).json({
         success: true,
         message: "New course has been created",
@@ -95,6 +106,30 @@ const teacherCtrl = {
         success: true,
         message: "Course published successfully",
         course,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  addlecture: async (req, res, next) => {
+    try {
+      const courseId = req.params.courseId;
+
+      const { videoTitle } = req.body;
+      let course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "lecture added successfully"));
+      }
+      let video = new Video({
+        videoTitle,
+        videoUrl: "public/course_videos" + "/" + req.file.filename,
+      });
+      video = await video.save();
+      course.videos.push(video._id);
+      course = await course.save();
+      res.json({
+        success: true,
+        message: "Lecture added successfully",
       });
     } catch (e) {
       next(e);

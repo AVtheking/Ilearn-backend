@@ -41,15 +41,15 @@ const courseCtrl = {
         },
         {
           $lookup: {
-            from: "Video",
+            from: "videos",
             localField: "videos",
             foreignField: "_id",
-            as: "videos",
+            as: "videosData",
           },
         },
         {
           $lookup: {
-            from: "User",
+            from: "users",
             localField: "createdBy",
             foreignField: "_id",
             as: "createdBy",
