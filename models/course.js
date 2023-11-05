@@ -17,7 +17,8 @@ const courseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    ownedBy: [
+    ownedBy: [//have to use joi here to calculate totalstudents
+    
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
