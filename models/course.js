@@ -17,8 +17,9 @@ const courseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    ownedBy: [//have to use joi here to calculate totalstudents
-    
+    ownedBy: [
+      //have to use joi here to calculate totalstudents
+
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -33,6 +34,7 @@ const courseSchema = new mongoose.Schema(
     ],
     category: {
       type: String,
+      ref: "Category",
     },
     price: {
       type: String,

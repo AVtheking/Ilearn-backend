@@ -1,5 +1,6 @@
 const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
+const { CategorySchema } = require("../utils/validator");
 
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
@@ -20,6 +21,27 @@ const teacherCtrl = {
       next(error);
     }
   },
+  addCategory: async (req, res, next) => {
+    try {
+      // const { category } = req.body;
+      const result = await CategorySchema.validateAsync(req.body);
+      const category = result.category;
+      const existingCategory = await Category.findOne({ category });
+      if (existingCategory) {
+        return next(new ErrorHandler(400, "This Category already exists"));
+      }
+      let newCategory = new Category({
+        name: category,
+      });
+      newCategory = await newCategory.save();
+      res.json({
+        success: true,
+        message: "A new category has been created",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
   createCourse: async (req, res, next) => {
     try {
       const { title, description, category, duration } = req.body;
@@ -29,6 +51,13 @@ const teacherCtrl = {
           new ErrorHandler(400, "Please select different course title")
         );
       }
+      let existingCategory = await Category.findOne({ name: category });
+      if (!existingCategory) {
+        return next(
+          new ErrorHandler(400, "Please provide valid category or create new")
+        );
+      }
+
       let newCourse = new Course({
         title,
         description,
@@ -40,23 +69,11 @@ const teacherCtrl = {
       });
 
       newCourse = await newCourse.save();
-      let existingCategory = await Category.findOne({ category });
-      if (existingCategory) {
-        existingCategory.courses.push(newCourse._id);
-        existingCategory = await existingCategory.save();
-      } else {
-        newCategory = new Category({
-          name: category,
-          courses: [newCourse._id],
-        });
-        newCategory = await newCategory.save();
-      }
+
       res.status(201).json({
         success: true,
         message: "New course has been created",
-        data: {
-          newCourse,
-        },
+        
       });
     } catch (e) {
       next(e);
@@ -96,12 +113,24 @@ const teacherCtrl = {
   publishCourse: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
-      const { price } = req.body;
+      const { price, category } = req.body;
+      let existingCategory = await Category.findOne({ name: category });
+      if (!existingCategory) {
+        return next(
+          new ErrorHandler(400, "Please provide valid category or create new")
+        );
+      }
+      let user = await User.findById(req.user);
+      user.createdCourse.push(courseId);
+      user = await user.save();
+
       const course = await Course.findByIdAndUpdate(
         courseId,
         { isPublished: true, price },
         { new: true }
       );
+      existingCategory.courses.push(course._id);
+      existingCategory = await existingCategory.save();
       res.json({
         success: true,
         message: "Course published successfully",
