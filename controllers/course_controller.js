@@ -89,7 +89,7 @@ const courseCtrl = {
   },
   getCategoriesName: async (req, res, next) => {
     try {
-      const categories = await Category.find();
+      const categories = await Category.find().lean();
       const categoryName = categories.map((category) => category.name);
 
       res.json({
@@ -105,14 +105,16 @@ const courseCtrl = {
   },
   getCategoriesData: async (req, res, next) => {
     try {
-      const categories = await Category.find().populate({
-        path: "courses",
-        select: "_id title description category price rating duration ",
-        populate: {
-          path: "createdBy",
-          select: "_id username name",
-        },
-      });
+      const categories = await Category.find()
+        .populate({
+          path: "courses",
+          select: "_id title description category price rating duration ",
+          populate: {
+            path: "createdBy",
+            select: "_id username name",
+          },
+        })
+        .lean();
       res.json({
         success: true,
         message: "Data of all courses in particular category",

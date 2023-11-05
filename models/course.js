@@ -34,7 +34,7 @@ const courseSchema = new mongoose.Schema(
     ],
     category: {
       type: String,
-      ref: "Category",
+    
     },
     price: {
       type: String,

@@ -1,6 +1,10 @@
 const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
-const { CategorySchema } = require("../utils/validator");
+const {
+  CategorySchema,
+  CourseSchema,
+  videoSchema,
+} = require("../utils/validator");
 
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
@@ -44,7 +48,11 @@ const teacherCtrl = {
   },
   createCourse: async (req, res, next) => {
     try {
-      const { title, description, category, duration } = req.body;
+      // const { title, description, category } = req.body;
+      const result = await CourseSchema.validateAsync(req.body);
+      const title = result.title;
+      const description = result.description;
+      const category = result.category;
       const existingTitle = await Course.findOne({ title });
       if (existingTitle) {
         return next(
@@ -64,8 +72,6 @@ const teacherCtrl = {
         // thumbnail: req.file.filename,
         createdBy: req.user,
         category,
-
-        duration,
       });
 
       newCourse = await newCourse.save();
@@ -85,7 +91,9 @@ const teacherCtrl = {
     try {
       const courseId = req.params.courseId;
 
-      const { videoTitle } = req.body;
+      // const { videoTitle } = req.body;
+      const result = await videoSchema.validateAsync(req.body);
+      const videoTitle = result.videoTitle;
 
       let course = await Course.findById(courseId);
       if (!course) {
@@ -146,7 +154,9 @@ const teacherCtrl = {
     try {
       const courseId = req.params.courseId;
 
-      const { videoTitle } = req.body;
+      // const { videoTitle } = req.body;
+      const result = await videoSchema.validateAsync(req.body);
+      const videoTitle = result.videoTitle;
       let course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(400, "lecture added successfully"));
