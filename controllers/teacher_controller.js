@@ -59,12 +59,6 @@ const teacherCtrl = {
           new ErrorHandler(400, "Please select different course title")
         );
       }
-      let existingCategory = await Category.findOne({ name: category });
-      if (!existingCategory) {
-        return next(
-          new ErrorHandler(400, "Please provide valid category or create new")
-        );
-      }
 
       let newCourse = new Course({
         title,
@@ -91,9 +85,9 @@ const teacherCtrl = {
     try {
       const courseId = req.params.courseId;
 
-      // const { videoTitle } = req.body;
-      const result = await videoSchema.validateAsync(req.body);
-      const videoTitle = result.videoTitle;
+      const { videoTitle, duration } = req.body;
+      const result = await videoSchema.validateAsync({ videoTitle });
+      // const videoTitle = result.videoTitle;
 
       let course = await Course.findById(courseId);
       if (!course) {
@@ -124,23 +118,28 @@ const teacherCtrl = {
     try {
       const courseId = req.params.courseId;
       const { price, category } = req.body;
-      let existingCategory = await Category.findOne({ name: category });
-      if (!existingCategory) {
-        return next(
-          new ErrorHandler(400, "Please provide valid category or create new")
-        );
-      }
       let user = await User.findById(req.user);
       user.createdCourse.push(courseId);
-      user = await user.save();
+      user.save();
+      const result = await CategorySchema.validateAsync({ category });
+      const categoryName = result.category;
 
       const course = await Course.findByIdAndUpdate(
         courseId,
         { isPublished: true, price },
         { new: true }
       );
-      existingCategory.courses.push(course._id);
-      existingCategory = await existingCategory.save();
+      let existingCategory = await Category.findOne({ name: categoryName });
+      if (!existingCategory) {
+        let newCategory = new Category({
+          name: category,
+          courses: [course._id],
+        });
+        newCategory.save();
+      } else {
+        existingCategory.courses.push(course._id);
+        existingCategory.save();
+      }
       res.json({
         success: true,
         message: "Course published successfully",

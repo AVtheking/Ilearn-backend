@@ -46,7 +46,7 @@ const courseSchema = new mongoose.Schema(
     },
     rating: {
       type: Number,
-      default: 0,
+      default: 4,
     },
     totalStudents: {
       type: Number,

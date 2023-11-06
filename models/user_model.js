@@ -45,6 +45,12 @@ const userSchema = new mongoose.Schema({
       ref: "Course",
     },
   ],
+  cart: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
 });
 userSchema.path("createdCourse").default([]);
 userSchema.path("ownedCourse").default([]);

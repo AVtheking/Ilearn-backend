@@ -15,13 +15,39 @@ const passwordSchema = Joi.object({
   ),
 });
 const CategorySchema = Joi.object({
-  category: Joi.string().required().trim(),
+  category: Joi.string()
+    .valid(
+      "Web Development",
+      "App Development",
+      "DSA",
+      "UI/UX",
+      "AI/ML",
+      "Data Science",
+      "AR/VR",
+      "Personality Development",
+      "Photography",
+      "Others"
+    )
+    .required(),
 });
 const CourseSchema = Joi.object({
   title: Joi.string().required().trim(),
   description: Joi.string().required().min(10).max(400).trim(),
   thumbnail: Joi.string(),
-  category: Joi.string().required(),
+  category: Joi.string()
+    .valid(
+      "Web Development",
+      "App Development",
+      "DSA",
+      "UI/UX",
+      "AI/ML",
+      "Data Science",
+      "AR/VR",
+      "Personality Development",
+      "Photography",
+      "Others"
+    )
+    .required(),
   price: Joi.string().default(0),
   duration: Joi.string().default(0),
   rating: Joi.number().default(0),
@@ -30,10 +56,14 @@ const videoSchema = Joi.object({
   videoTitle: Joi.string().required().trim(),
   videoUrl: Joi.string().required(),
 });
+const paramSchema = Joi.object({
+  params: Joi.string().required(),
+});
 module.exports = {
   authSchema,
   passwordSchema,
   CategorySchema,
   CourseSchema,
-  videoSchema
+  videoSchema,
+  paramSchema,
 };
