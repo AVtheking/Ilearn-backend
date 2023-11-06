@@ -3,6 +3,7 @@ const ErrorHandler = require("../middlewares/error");
 const redis = require("redis");
 const { paramSchema } = require("../utils/validator");
 
+
 const redisClient = redis.createClient();
 redisClient.connect().catch(console.error);
 
@@ -205,6 +206,70 @@ const courseCtrl = {
       next(e);
     }
   },
-  
+  getCoursesInCart: async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user).populate("cart");
+      res.json({
+        success: true,
+        message: "Courses in the cart ",
+        data: {
+          courses: user.cart,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getWishlist: async (req, res, next) => {
+    try {
+      const user = await User.findById(req.user);
+      user.wishlist.push(courseId);
+      await user.save();
+      res.json({
+        success: true,
+        message: "wishlist of the user",
+        data: {
+          wishlist: user.wishlist,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  addToWishlist: async (req, res, next) => {
+    try {
+      const courseid = req.param.courseId;
+      const result = await paramSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
+      const user = await User.findById(req.user);
+      user.wishlist.push(courseId);
+      await user.save();
+      res.json({
+        success: true,
+        message: "course added to wishlist",
+        data: {
+          wishlist: user.wishlist,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  deleteCourseFromWishlist: async (req, res, next) => {
+    const courseid = req.param.courseId;
+    const result = await paramSchema.validateAsync({ params: courseid });
+    const courseId = result.params;
+    const user = await user.findById(req.user);
+    const courseIndex = user.wishlist.indexOf(courseId);
+    if (courseIndex == -1) {
+      return next(new ErrorHandler(400, "No course found"));
+    }
+    user.wishlist.splice(courseIndex, 1);
+    await user.save();
+    res.json({
+      success: true,
+      message:"Course deleted from wishlist successfully"
+    })
+  },
 };
 module.exports = courseCtrl;
