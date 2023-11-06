@@ -1,6 +1,11 @@
 const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
-const { CategorySchema } = require("../utils/validator");
+const {
+  CategorySchema,
+  CourseSchema,
+  videoSchema,
+  paramSchema,
+} = require("../utils/validator");
 
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
@@ -44,17 +49,15 @@ const teacherCtrl = {
   },
   createCourse: async (req, res, next) => {
     try {
-      const { title, description, category, duration } = req.body;
+      // const { title, description, category } = req.body;
+      const result = await CourseSchema.validateAsync(req.body);
+      const title = result.title;
+      const description = result.description;
+      const category = result.category;
       const existingTitle = await Course.findOne({ title });
       if (existingTitle) {
         return next(
           new ErrorHandler(400, "Please select different course title")
-        );
-      }
-      let existingCategory = await Category.findOne({ name: category });
-      if (!existingCategory) {
-        return next(
-          new ErrorHandler(400, "Please provide valid category or create new")
         );
       }
 
@@ -64,8 +67,6 @@ const teacherCtrl = {
         // thumbnail: req.file.filename,
         createdBy: req.user,
         category,
-
-        duration,
       });
 
       newCourse = await newCourse.save();
@@ -83,9 +84,12 @@ const teacherCtrl = {
   },
   uploadVideo_toCourse: async (req, res, next) => {
     try {
-      const courseId = req.params.courseId;
-
-      const { videoTitle } = req.body;
+      const courseid = req.params.courseId;
+      const result = await paramSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
+      const { videoTitle, duration } = req.body;
+      const result2 = await videoSchema.validateAsync({ videoTitle });
+      const videotitle = result2.videoTitle;
 
       let course = await Course.findById(courseId);
       if (!course) {
@@ -97,11 +101,12 @@ const teacherCtrl = {
         );
       }
       let video = new Video({
-        videoTitle,
+        videoTitle: videotitle,
         videoUrl: "public/course_videos" + "/" + req.file.filename,
       });
       video = await video.save();
       course.videos.push(video._id);
+      course.duration = duration;
       course = await course.save();
 
       res.json({
@@ -114,25 +119,32 @@ const teacherCtrl = {
   },
   publishCourse: async (req, res, next) => {
     try {
-      const courseId = req.params.courseId;
+      const courseid = req.params.courseId;
+      const result = await paramSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
       const { price, category } = req.body;
-      let existingCategory = await Category.findOne({ name: category });
-      if (!existingCategory) {
-        return next(
-          new ErrorHandler(400, "Please provide valid category or create new")
-        );
-      }
       let user = await User.findById(req.user);
       user.createdCourse.push(courseId);
-      user = await user.save();
+      user.save();
+      const result2 = await CategorySchema.validateAsync({ category });
+      const categoryName = result2.category;
 
       const course = await Course.findByIdAndUpdate(
         courseId,
         { isPublished: true, price },
         { new: true }
       );
-      existingCategory.courses.push(course._id);
-      existingCategory = await existingCategory.save();
+      let existingCategory = await Category.findOne({ name: categoryName });
+      if (!existingCategory) {
+        let newCategory = new Category({
+          name: category,
+          courses: [course._id],
+        });
+        newCategory.save();
+      } else {
+        existingCategory.courses.push(course._id);
+        existingCategory.save();
+      }
       res.json({
         success: true,
         message: "Course published successfully",
@@ -146,7 +158,9 @@ const teacherCtrl = {
     try {
       const courseId = req.params.courseId;
 
-      const { videoTitle } = req.body;
+      // const { videoTitle } = req.body;
+      const result = await videoSchema.validateAsync(req.body);
+      const videoTitle = result.videoTitle;
       let course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(400, "lecture added successfully"));

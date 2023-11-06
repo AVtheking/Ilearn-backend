@@ -61,16 +61,16 @@ io.on("connection", (socket) => {
       io.to(courseId).emit("chatMessage", chatMessage);
     });
   });
-  socket.on("message", async (msg) => {
-    console.log("received a message", msg);
-    const { text, userId } = msg;
-    let message = new Message({
-      text,
-      user: userId,
-    });
-    message = await message.save();
-    io.emit("message", msg);
-  });
+  // socket.on("message", async (msg) => {
+  //   console.log("received a message", msg);
+  //   const { text, userId } = msg;
+  //   let message = new Message({
+  //     text,
+  //     user: userId,
+  //   });
+  //   message = await message.save();
+  //   io.emit("message", msg);
+  // });
 });
 
 mongoose.connect(process.env.DB).then(() => {

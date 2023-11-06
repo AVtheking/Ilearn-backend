@@ -6,7 +6,9 @@ const { authSchema, passwordSchema } = require("../utils/validator");
 const { User, Otp } = require("../models");
 const shortid = require("shortid");
 require("dotenv").config();
-
+const redis = require("redis");
+const redisClient = redis.createClient();
+redisClient.connect().catch(console.error);
 const authCtrl = {
   signUp: async (req, res, next) => {
     try {
@@ -23,7 +25,7 @@ const authCtrl = {
       if (existingOtp) {
         existingOtp.updateOne({
           otp,
-          createdAt: new Date(),  
+          createdAt: new Date(),
         });
       } else {
         let OTP = new Otp({
@@ -237,7 +239,7 @@ const authCtrl = {
   changePassword: async (req, res, next) => {
     try {
       // const { newPassword } = req.body;
-      const result = await   passwordSchema.validateAsync(req.body);
+      const result = await passwordSchema.validateAsync(req.body);
       console.log(result);
       const newPassword = result.password;
       let token = req.headers["authorization"];
@@ -253,6 +255,7 @@ const authCtrl = {
         shortId: uid,
         password: hashedPassword,
       });
+      await redisClient.del("userdata");
       res.json({
         success: true,
         message: "password has been changed successfully",

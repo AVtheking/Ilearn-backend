@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const { ErrorHandler } = require("./error");
 const { User } = require("../models");
+const redis = require("redis");
+const redisClient = redis.createClient();
+redisClient.connect().catch(console.error);
 const auth = async (req, res, next) => {
   try {
     let token = req.headers["authorization"];
@@ -9,14 +12,24 @@ const auth = async (req, res, next) => {
     }
 
     token = token.replace(/^Bearer\s+/, "");
-    // token = token.replace(/^Bearer\s+/, "");
+
     jwt.verify(token, process.env.USER, async (err, payload) => {
       if (err) {
         return next(new ErrorHandler(401, "Invalid Token"));
       }
+      const key = "userdata";
       const id = payload.id;
       const uid = payload.uid;
-      let user = await User.findById({ _id: id });
+      const data = await redisClient.get(key);
+      let user;
+      if (data) {
+        console.log(JSON.parse(data));
+        user = JSON.parse(data);
+      } else {
+        user = await User.findById({ _id: id });
+        redisClient.setEx(key, 3600, JSON.stringify(user));
+      }
+
       if (!user) {
         return next(new ErrorHandler(400, "Failed to find user from token"));
       }

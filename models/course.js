@@ -17,15 +17,7 @@ const courseSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    ownedBy: [
-      //have to use joi here to calculate totalstudents
 
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        default: 0,
-      },
-    ],
     videos: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,7 +26,6 @@ const courseSchema = new mongoose.Schema(
     ],
     category: {
       type: String,
-      ref: "Category",
     },
     price: {
       type: String,
@@ -46,7 +37,7 @@ const courseSchema = new mongoose.Schema(
     },
     rating: {
       type: Number,
-      default: 0,
+      default: 4,
     },
     totalStudents: {
       type: Number,
