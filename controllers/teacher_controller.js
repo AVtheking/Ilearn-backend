@@ -4,6 +4,7 @@ const {
   CategorySchema,
   CourseSchema,
   videoSchema,
+  paramSchema,
 } = require("../utils/validator");
 
 const teacherCtrl = {
@@ -83,11 +84,12 @@ const teacherCtrl = {
   },
   uploadVideo_toCourse: async (req, res, next) => {
     try {
-      const courseId = req.params.courseId;
-
+      const courseid = req.params.courseId;
+      const result = await paramSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
       const { videoTitle, duration } = req.body;
-      const result = await videoSchema.validateAsync({ videoTitle });
-      // const videoTitle = result.videoTitle;
+      const result2 = await videoSchema.validateAsync({ videoTitle });
+      const videotitle = result2.videoTitle;
 
       let course = await Course.findById(courseId);
       if (!course) {
@@ -99,11 +101,12 @@ const teacherCtrl = {
         );
       }
       let video = new Video({
-        videoTitle,
+        videoTitle: videotitle,
         videoUrl: "public/course_videos" + "/" + req.file.filename,
       });
       video = await video.save();
       course.videos.push(video._id);
+      course.duration = duration;
       course = await course.save();
 
       res.json({
@@ -116,13 +119,15 @@ const teacherCtrl = {
   },
   publishCourse: async (req, res, next) => {
     try {
-      const courseId = req.params.courseId;
+      const courseid = req.params.courseId;
+      const result = await paramSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
       const { price, category } = req.body;
       let user = await User.findById(req.user);
       user.createdCourse.push(courseId);
       user.save();
-      const result = await CategorySchema.validateAsync({ category });
-      const categoryName = result.category;
+      const result2 = await CategorySchema.validateAsync({ category });
+      const categoryName = result2.category;
 
       const course = await Course.findByIdAndUpdate(
         courseId,

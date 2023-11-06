@@ -18,15 +18,20 @@ const courseCtrl = {
       const courses = await Course.find()
         .sort("-createdAt")
         .populate("videos", "_id videoTitle videoUrl")
-        .populate("createdBy", "_id username name");
-      res.json({
+        .populate({
+          path: "createdBy",
+          select: "_id username name",
+        });
+      // .populate("createdBy", "_id username name createdCourse ");
+      const value = {
         success: true,
         message: "list of all courses",
         data: {
           courses,
         },
-      });
-      redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(courses));
+      };
+      res.json(value);
+      redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(value));
     } catch (e) {
       next(e);
     }
@@ -200,5 +205,6 @@ const courseCtrl = {
       next(e);
     }
   },
+  
 };
 module.exports = courseCtrl;

@@ -54,7 +54,7 @@ const CourseSchema = Joi.object({
 });
 const videoSchema = Joi.object({
   videoTitle: Joi.string().required().trim(),
-  videoUrl: Joi.string().required(),
+  // videoUrl: Joi.string().required(),
 });
 const paramSchema = Joi.object({
   params: Joi.string().required(),
