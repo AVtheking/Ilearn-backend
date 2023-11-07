@@ -210,20 +210,20 @@ const teacherCtrl = {
       const searchteacher = req.query.q;
 
       if (!searchteacher) {
-        return res.status(400).json({ error: 'Teacher name is required.' });
+        return res.status(400).json({ error: "Teacher name is required." });
       }
-  
+
       const teacher = await teacher.find({
         $or: [
-          { name: { $regex: new RegExp(searchQuery, 'i') } },
-          { expertise: { $regex: new RegExp(searchQuery, 'i') } },
+          { name: { $regex: new RegExp(searchQuery, "i") } },
+          { expertise: { $regex: new RegExp(searchQuery, "i") } },
         ],
       });
-  
+
       res.json(teacher);
     } catch (err) {
       next(err);
     }
   },
-}
+};
 module.exports = teacherCtrl;
