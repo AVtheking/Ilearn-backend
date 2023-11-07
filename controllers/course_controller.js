@@ -3,7 +3,6 @@ const ErrorHandler = require("../middlewares/error");
 const redis = require("redis");
 const { paramSchema } = require("../utils/validator");
 
-
 const redisClient = redis.createClient();
 redisClient.connect().catch(console.error);
 
@@ -222,7 +221,7 @@ const courseCtrl = {
   },
   getWishlist: async (req, res, next) => {
     try {
-      const user = await User.findById(req.user);
+      const user = await User.findById(req.user).populate("wishlist");
       user.wishlist.push(courseId);
       await user.save();
       res.json({
@@ -268,8 +267,8 @@ const courseCtrl = {
     await user.save();
     res.json({
       success: true,
-      message:"Course deleted from wishlist successfully"
-    })
+      message: "Course deleted from wishlist successfully",
+    });
   },
 };
 module.exports = courseCtrl;
