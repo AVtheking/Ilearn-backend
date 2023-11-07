@@ -35,9 +35,21 @@ const courseSchema = new mongoose.Schema(
       type: String,
       default: 0,
     },
+<<<<<<< HEAD
     rating: {
       type: Number,
       default: 4,
+=======
+    ratings:{
+        type: mongoose.Mixed,
+        1:1, 
+        2:2,
+        3:3,
+        4:4,
+        5:5,
+    //default: {1:1, 2:1, 3:1, 4:1, 5:1}}
+       default: 0,
+>>>>>>> 0aa766d (Adding course operations)
     },
     totalStudents: {
       type: Number,
@@ -47,6 +59,9 @@ const courseSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    popularity:{
+      type:Number,
+    }
   },
   {
     timestamps: true,
