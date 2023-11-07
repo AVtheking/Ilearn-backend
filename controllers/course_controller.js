@@ -1,19 +1,19 @@
 const { Course, Category, User } = require("../models");
 const ErrorHandler = require("../middlewares/error");
-const redis = require("redis");
+// const redis = require("redis");
 const { paramSchema } = require("../utils/validator");
 
-const redisClient = redis.createClient();
-redisClient.connect().catch(console.error);
+// const redisClient = redis.createClient();
+// redisClient.connect().catch(console.error);
 
 const DEFAULT_EXPIRATION = 3600;
 const courseCtrl = {
   getCourses: async (req, res, next) => {
     const key = req.originalUrl;
-    const cachedData = await redisClient.get(key);
-    if (cachedData) {
-      return res.json(JSON.parse(cachedData));
-    }
+    // const cachedData = await redisClient.get(key);
+    // if (cachedData) {
+    //   return res.json(JSON.parse(cachedData));
+    // }
     try {
       const courses = await Course.find()
         .sort("-createdAt")
@@ -31,17 +31,17 @@ const courseCtrl = {
         },
       };
       res.json(value);
-      redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(value));
+      // redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(value));
     } catch (e) {
       next(e);
     }
   },
   getCoursesByCategory: async (req, res, next) => {
     const key = req.originalUrl;
-    const cachedData = await redisClient.get(key);
-    if (cachedData) {
-      return res.json(JSON.parse(cachedData));
-    }
+    // const cachedData = await redisClient.get(key);
+    // if (cachedData) {
+    //   return res.json(JSON.parse(cachedData));
+    // }
     try {
       const category = req.params.category;
       // const courses = await Course.find({ category, isPublished: true })
@@ -105,17 +105,17 @@ const courseCtrl = {
           courses,
         },
       });
-      redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(courses));
+      // redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(courses));
     } catch (e) {
       next(e);
     }
   },
   getCategoriesName: async (req, res, next) => {
-    const key = req.originalUrl;
-    const cachedData = await redisClient.get(key);
-    if (cachedData) {
-      return res.json(JSON.parse(cachedData));
-    }
+    // const key = req.originalUrl;
+    // const cachedData = await redisClient.get(key);
+    // if (cachedData) {
+    //   return res.json(JSON.parse(cachedData));
+    // }
     try {
       const categories = await Category.find().lean();
       const categoryName = categories.map((category) => category.name);
@@ -131,17 +131,17 @@ const courseCtrl = {
         value,
       });
 
-      redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(value));
+      // redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(value));
     } catch (e) {
       next(e);
     }
   },
   getCategoriesData: async (req, res, next) => {
-    const key = req.originalUrl;
-    const cachedData = await redisClient.get(key);
-    if (cachedData) {
-      return res.json(JSON.parse(cachedData));
-    }
+    // const key = req.originalUrl;
+    // const cachedData = await redisClient.get(key);
+    // if (cachedData) {
+    //   return res.json(JSON.parse(cachedData));
+    // }
     try {
       const categories = await Category.find()
         .populate({
@@ -164,7 +164,7 @@ const courseCtrl = {
       res.json({
         value,
       });
-      redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(value));
+      // redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(value));
     } catch (e) {
       next(e);
     }

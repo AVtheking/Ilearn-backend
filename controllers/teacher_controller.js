@@ -85,6 +85,7 @@ const teacherCtrl = {
   uploadVideo_toCourse: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
+      console.log(req.file);
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const { videoTitle, duration } = req.body;
