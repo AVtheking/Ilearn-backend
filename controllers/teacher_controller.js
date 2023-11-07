@@ -1,5 +1,11 @@
 const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
+const { getVideoDurationInSeconds } = require("get-video-duration");
+const Ffmpeg = require("fluent-ffmpeg");
+Ffmpeg.setFfmpegPath("C:ffmpeg\\bin\\ffmpeg.exe");
+Ffmpeg.setFfprobePath("C:ffmpeg\\bin\\ffprobe.exe");
+const { scanVideo } = require("ffmpeg-progress");
+
 const {
   CategorySchema,
   CourseSchema,
@@ -85,7 +91,8 @@ const teacherCtrl = {
   uploadVideo_toCourse: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
-      console.log(req.file);
+      // console.log(await scanVideo(req.file));
+
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const { videoTitle, duration } = req.body;
@@ -101,9 +108,15 @@ const teacherCtrl = {
           )
         );
       }
+      console.log(req.file.filename);
+      const du = await getVideoDurationInSeconds(
+        "public/course_videos" + "/" + req.file.filename
+      );
+      console.log(du);
       let video = new Video({
         videoTitle: videotitle,
         videoUrl: "public/course_videos" + "/" + req.file.filename,
+        videoDuration:du
       });
       video = await video.save();
       course.videos.push(video._id);

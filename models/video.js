@@ -9,6 +9,10 @@ const videoSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  videoDuration: {
+    type: Number,
+    required: true,
+  },
 });
 const Video = new mongoose.model("Video", videoSchema);
 module.exports = Video;
