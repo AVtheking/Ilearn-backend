@@ -1,5 +1,11 @@
 const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
+const { getVideoDurationInSeconds } = require("get-video-duration");
+const Ffmpeg = require("fluent-ffmpeg");
+Ffmpeg.setFfmpegPath("C:ffmpeg\\bin\\ffmpeg.exe");
+Ffmpeg.setFfprobePath("C:ffmpeg\\bin\\ffprobe.exe");
+const { scanVideo } = require("ffmpeg-progress");
+
 const {
   CategorySchema,
   CourseSchema,
@@ -52,6 +58,7 @@ const teacherCtrl = {
       // const { title, description, category } = req.body;
       const result = await CourseSchema.validateAsync(req.body);
       const title = result.title;
+      console.log(req.user);
       const description = result.description;
       const category = result.category;
       const existingTitle = await Course.findOne({ title });
@@ -85,7 +92,8 @@ const teacherCtrl = {
   uploadVideo_toCourse: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
-      console.log(req.file);
+      // console.log(await scanVideo(req.file));
+
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const { videoTitle, duration } = req.body;
@@ -101,9 +109,15 @@ const teacherCtrl = {
           )
         );
       }
+      console.log(req.file.filename);
+      const du = await getVideoDurationInSeconds(
+        "public/course_videos" + "/" + req.file.filename
+      );
+      console.log(du);
       let video = new Video({
         videoTitle: videotitle,
         videoUrl: "public/course_videos" + "/" + req.file.filename,
+        videoDuration: du,
       });
       video = await video.save();
       course.videos.push(video._id);
@@ -124,9 +138,10 @@ const teacherCtrl = {
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const { price, category } = req.body;
-      let user = await User.findById(req.user);
+
+      let user = req.user;
       user.createdCourse.push(courseId);
-      user.save();
+       user.save();
       const result2 = await CategorySchema.validateAsync({ category });
       const categoryName = result2.category;
 
