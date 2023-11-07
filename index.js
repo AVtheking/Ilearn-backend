@@ -28,7 +28,7 @@ app.use(
 );
 app.use(express.static("public"));
 app.set("view engine", "ejs");
-app.get("/", async (req, res) => {
+app.get("/upload", async (req, res) => {
   res.render("upload");
 });
 app.use(express.urlencoded({ extended: false }));
