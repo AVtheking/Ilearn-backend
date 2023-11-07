@@ -37,6 +37,26 @@ const courseCtrl = {
       next(e);
     }
   },
+  getCourseByid: async (req, res, next) => {
+    try {
+      const id = req.param.id;
+      const result = await paramSchema.validateAsync({ id });
+      const courseId = result.params;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "No course found"));
+      }
+      res.json({
+        success: true,
+        message: "Course Found",
+        data: {
+          course,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
   getCoursesByCategory: async (req, res, next) => {
     const key = req.originalUrl;
     // const cachedData = await redisClient.get(key);
@@ -64,7 +84,7 @@ const courseCtrl = {
             from: "videos",
             localField: "videos",
             foreignField: "_id",
-            as: "videosData",
+            as: "videos",
           },
         },
         {
