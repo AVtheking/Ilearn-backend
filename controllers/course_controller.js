@@ -1,5 +1,6 @@
 const { Course, Category, User } = require("../models");
 const ErrorHandler = require("../middlewares/error");
+
 // const redis = require("redis");
 const { paramSchema } = require("../utils/validator");
 //const Enrollment = require('../models/Enrollment');
