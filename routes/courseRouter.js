@@ -15,3 +15,7 @@ courseRouter.post("/add-wishlist", auth, courseCtrl.addToWishlist)
 courseRouter.delete("/delete-cart/:courseId", auth, courseCtrl.deleteCourseFromCart);
 courseRouter.delete("/delete-wishlist",auth,courseCtrl.deleteCourseFromWishlist)
 module.exports = courseRouter;
+courseRouter.get("/search-course", courseCtrl.searchCourses);
+courseRouter.get("/getpopularcourse", courseCtrl.getPopularCourses);
+courseRouter.post("/rate-course",auth,courseCtrl.rateCourse );
+courseRouter.post('/enroll/:courseId', auth, courseCtrl.enrollCourse);
