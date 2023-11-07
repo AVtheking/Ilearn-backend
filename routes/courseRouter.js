@@ -11,3 +11,7 @@ courseRouter.get(
 );
 courseRouter.get("/video/:courseId",  videoCtrl.streamVideo);
 module.exports = courseRouter;
+courseRouter.get("/search-course", courseCtrl.searchCourses);
+courseRouter.get("/getpopularcourse", courseCtrl.getPopularCourses);
+courseRouter.post("/rate-course",auth,courseCtrl.rateCourse );
+courseRouter.post('/enroll/:courseId', auth, courseCtrl.enrollCourse);
