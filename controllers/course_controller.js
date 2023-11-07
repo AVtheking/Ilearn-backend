@@ -1,6 +1,5 @@
 const { Course, Category, User } = require("../models");
 const ErrorHandler = require("../middlewares/error");
-
 // const redis = require("redis");
 const { paramSchema } = require("../utils/validator");
 //const Enrollment = require('../models/Enrollment');
@@ -8,7 +7,7 @@ const { paramSchema } = require("../utils/validator");
 // const redisClient = redis.createClient();
 // redisClient.connect().catch(console.error);
 
-const DEFAULT_EXPIRATION = 3600;
+// const DEFAULT_EXPIRATION = 3600;
 const courseCtrl = {
   getCourses: async (req, res, next) => {
     const key = req.originalUrl;
@@ -66,7 +65,6 @@ const courseCtrl = {
     // }
     try {
       const category = req.params.category;
-     
 
       const courses = await Course.aggregate([
         {

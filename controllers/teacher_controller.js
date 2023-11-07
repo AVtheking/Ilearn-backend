@@ -58,7 +58,7 @@ const teacherCtrl = {
       // const { title, description, category } = req.body;
       const result = await CourseSchema.validateAsync(req.body);
       const title = result.title;
-      console.log(req.user);
+      // console.log(req.user);
       const description = result.description;
       const category = result.category;
       const existingTitle = await Course.findOne({ title });
@@ -71,7 +71,7 @@ const teacherCtrl = {
       let newCourse = new Course({
         title,
         description,
-        // thumbnail: req.file.filename,
+        thumbnail: "public/thumbnails" + "/" + req.file.filename,
         createdBy: req.user,
         category,
       });
@@ -141,7 +141,7 @@ const teacherCtrl = {
 
       let user = req.user;
       user.createdCourse.push(courseId);
-       user.save();
+      user.save();
       const result2 = await CategorySchema.validateAsync({ category });
       const categoryName = result2.category;
 
@@ -231,7 +231,7 @@ const teacherCtrl = {
       const teacher = await teacher.find({
         $or: [
           { name: { $regex: new RegExp(searchQuery, "i") } },
-          { expertise: { $regex: new RegExp(searchQuery, "i") } },
+          { expertise: { $regex: new RegExp(searchQuery, "i") } },//what is this?
         ],
       });
 
