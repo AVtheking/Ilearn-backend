@@ -4,7 +4,13 @@ const cors = require("cors");
 
 const { errorMiddleware } = require("./middlewares/error");
 
-const { authRouter, teacherRouter, courseRouter, imageRouter, commentRouter } = require("./routes");
+const {
+  authRouter,
+  teacherRouter,
+  courseRouter,
+  imageRouter,
+  commentRouter,
+} = require("./routes");
 
 require("dotenv").config();
 
@@ -38,7 +44,7 @@ app.use(authRouter, errorMiddleware);
 app.use(teacherRouter, errorMiddleware);
 app.use(courseRouter, errorMiddleware);
 // app.use(imageRouter,errorMiddleware);
-app.use(commentRouter,errorMiddleware);
+app.use(commentRouter, errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 
@@ -78,8 +84,8 @@ io.on("connection", (socket) => {
 mongoose.connect(process.env.DB).then(() => {
   console.log("connection is successful");
   server.listen(PORT, "0.0.0.0", () => {
-   console.log(`Server is running on port ${PORT}`);
-  //server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    //server.listen(PORT, () => {
     //console.log(`Server is running on port ${PORT}`);
   });
 });
