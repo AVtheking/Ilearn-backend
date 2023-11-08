@@ -149,6 +149,7 @@ const teacherCtrl = {
       next(e);
     }
   },
+  
   publishCourse: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
