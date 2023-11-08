@@ -113,7 +113,7 @@ const teacherCtrl = {
 
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const { videoTitle, duration } = req.body;
+      const { videoTitle } = req.body;
       const result2 = await videoSchema.validateAsync({ videoTitle });
       const videotitle = result2.videoTitle;
 
@@ -125,6 +125,12 @@ const teacherCtrl = {
             "Some error while creating course.Can't find the course."
           )
         );
+      }
+      if (course.createdBy != req.user._id) {
+        return next(new ErroHandler(400,"You are not the creater of the course"))
+      }
+      if (course.isPublished) {
+        return(new ErrorHandler(400,"You can't add video to published course"))
       }
       console.log(req.file.filename);
       const du = await getVideoDurationInSeconds(
@@ -138,7 +144,7 @@ const teacherCtrl = {
       });
       video = await video.save();
       course.videos.push(video._id);
-      course.duration = duration;
+      // course.duration = duration;
       course = await course.save();
 
       res.json({
@@ -155,28 +161,43 @@ const teacherCtrl = {
       const courseid = req.params.courseId;
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const { price, category } = req.body;
+      const { price, category ,duration} = req.body;
+      let course= await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "Course not found"));
+      }
+      if (course.createdBy != req.user._id) {
+        return next(
+          new ErrorHandler(400, "You are not the creater of the course")
+        );
+      }
+      if (course.isPublished) {
+        return next(new ErrorHandler(400, "Course is already published"));
+      }
 
       let user = req.user;
       user.createdCourse.push(courseId);
       user.save();
       const result2 = await CategorySchema.validateAsync({ category });
       const categoryName = result2.category;
+      course.isPublished = true;
+      course.price = price;
+      course.duration = duration;
 
-      const course = await Course.findByIdAndUpdate(
-        courseId,
-        { isPublished: true, price },
-        { new: true }
-      );
+      // const course = await Course.findByIdAndUpdate(
+      //   courseId,
+      //   { isPublished: true, price },
+      //   { new: true }
+      // );
       let existingCategory = await Category.findOne({ name: categoryName });
       if (!existingCategory) {
         let newCategory = new Category({
           name: category,
-          courses: [course._id],
+          courses: [courseId],
         });
         newCategory.save();
       } else {
-        existingCategory.courses.push(course._id);
+        existingCategory.courses.push(course.Id);
         existingCategory.save();
       }
       res.json({
@@ -217,9 +238,13 @@ const teacherCtrl = {
           new ErrorHandler(400, "You are not the creater of the course")
         );
       }
+      const du = await getVideoDurationInSeconds(
+        "public/course_videos" + "/" + req.file.filename
+      );
       let video = new Video({
         videoTitle,
         videoUrl: "public/course_videos" + "/" + req.file.filename,
+        videoDuration:du
       });
       video = await video.save();
       course.videos.push(video._id);

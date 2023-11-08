@@ -231,7 +231,7 @@ const courseCtrl = {
       //   message: "List of courses",
       //   data: {
       //     results
-      //   }
+      //   }x`
       // })
     } catch (error) {
       //res.status(500).json({ error: 'Error searching for courses.' });
@@ -352,7 +352,7 @@ const courseCtrl = {
   },
   getCoursesInCart: async (req, res, next) => {
     try {
-      const user = await User.findById(req.user).populate("cart");
+      const user = await User.findById(req.user._id).populate("cart");
       res.json({
         success: true,
         message: "Courses in the cart ",
@@ -366,7 +366,7 @@ const courseCtrl = {
   },
   getWishlist: async (req, res, next) => {
     try {
-      const user = await User.findById(req.user).populate("wishlist");
+      const user = await User.findById(req.user._id).populate("wishlist");
       user.wishlist.push(courseId);
       await user.save();
       res.json({

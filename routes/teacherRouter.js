@@ -4,6 +4,7 @@ const { teacherCtrl } = require("../controllers");
 const {auth,uploadVideo, uploadImage} = require("../middlewares");
 
 teacherRouter.patch("/become-instructor", auth, teacherCtrl.becomeTeacher);
+teacherRouter.patch("/become-student", auth, teacherCtrl.becomeStudent);
 teacherRouter.post("/create-course", auth,uploadImage, teacherCtrl.createCourse);
 teacherRouter.post("/upload-video/:courseId", auth, uploadVideo, teacherCtrl.uploadVideo_toCourse);
 teacherRouter.post("/publish-course/:courseId", auth, teacherCtrl.publishCourse);
