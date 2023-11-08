@@ -191,7 +191,7 @@ const courseCtrl = {
       const courseid = req.params.courseId;
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const user = await User.findById(req.user);
+      const user =req.user
       user.cart.push(courseId);
       await user.save();
       res.json({
@@ -462,7 +462,7 @@ const courseCtrl = {
         },
       });
     } catch (e) {
-      next(e);
+    next(e);
     }
   },
   addToWishlist: async (req, res, next) => {
@@ -485,7 +485,8 @@ const courseCtrl = {
     }
   },
   deleteCourseFromWishlist: async (req, res, next) => {
-    const courseid = req.param.courseId;
+  try
+  {  const courseid = req.param.courseId;
     const result = await paramSchema.validateAsync({ params: courseid });
     const courseId = result.params;
     const user = await user.findById(req.user);
@@ -499,6 +500,10 @@ const courseCtrl = {
       success: true,
       message: "Course deleted from wishlist successfully",
     });
+    }
+  catch (e) {
+    next(e)
+    }
   },
 
     rateCourse : async (req, res, next) => {

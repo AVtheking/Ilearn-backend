@@ -4,8 +4,5 @@ module.exports.Course = require("./course");
 module.exports.Video = require("./video");
 module.exports.Category = require("./category");
 module.exports.Message = require("./message");
-<<<<<<< HEAD
 // module.exports.Cart = require("./cart"); 
-=======
 module.exports.Comment = require("./comment");
->>>>>>> 0aa766d (Adding course operations)
