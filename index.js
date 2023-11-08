@@ -37,7 +37,7 @@ app.use(errorMiddleware);
 app.use(authRouter, errorMiddleware);
 app.use(teacherRouter, errorMiddleware);
 app.use(courseRouter, errorMiddleware);
-app.use(imageRouter,errorMiddleware);
+// app.use(imageRouter,errorMiddleware);
 app.use(commentRouter,errorMiddleware);
 
 const PORT = process.env.PORT || 5000;

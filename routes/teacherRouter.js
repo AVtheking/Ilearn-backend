@@ -1,7 +1,7 @@
 const express = require("express");
 const teacherRouter = express.Router();
 const { teacherCtrl } = require("../controllers");
-const {auth,uploadVideo} = require("../middlewares");
+const {auth,uploadVideo, uploadImage} = require("../middlewares");
 
 teacherRouter.patch("/become-instructor", auth, teacherCtrl.becomeTeacher);
 teacherRouter.post("/create-course", auth,uploadImage, teacherCtrl.createCourse);
