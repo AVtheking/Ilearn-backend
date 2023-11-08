@@ -191,7 +191,7 @@ const courseCtrl = {
       const courseid = req.params.courseId;
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const user = await User.findById(req.user);
+      const user =req.user
       user.cart.push(courseId);
       await user.save();
       res.json({

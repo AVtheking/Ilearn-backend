@@ -32,6 +32,23 @@ const teacherCtrl = {
       next(error);
     }
   },
+  becomeStudent: async (req, res, next) => {
+    try {
+      const { email } = req.body;
+      await User.findOneAndUpdate(
+        {
+          email,
+        },
+        { role: "student" }
+      );
+      res.json({
+        success: "true",
+        message: "You have successfully became student",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
   addCategory: async (req, res, next) => {
     try {
       // const { category } = req.body;
@@ -170,6 +187,19 @@ const teacherCtrl = {
       next(e);
     }
   },
+  // updateCourse: async (req, res, next) => {
+  //   try {
+  //     const id = req.params.courseId;
+  //     const result = await paramSchema.validateAsync({ params: id });
+  //     const courseId = result.params;
+  //     let course = await Course.findByid(courseId);
+  //     if (!course) {
+  //       return next(new ErrorHandler(400,"Course not found"))
+  //     }
+  //   } catch (e) {
+  //     next(e);
+  //   }
+  // },
   addlecture: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
@@ -180,6 +210,11 @@ const teacherCtrl = {
       let course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(400, "lecture added successfully"));
+      }
+      if (course.createdBy != req.user._id) {
+        return next(
+          new ErrorHandler(400, "You are not the creater of the course")
+        );
       }
       let video = new Video({
         videoTitle,
@@ -204,6 +239,9 @@ const teacherCtrl = {
       if (!course) {
         return next(new ErrorHandler(400, "Course not found"));
       }
+      if (course.createdBy != req.user._id) {
+        return next(new ErrorHandler(400,"You are not creater of the course"))
+      }
       const videoIndex = course.videos.indexOf(lectureId);
       if (videoIndex == -1) {
         return next(new ErrorHandler(400, "Lecture not found in the course"));
@@ -219,7 +257,6 @@ const teacherCtrl = {
       next(e);
     }
   },
-
   searchTeacher: async (req, res, next) => {
     try {
       const searchteacher = req.query.q;
@@ -231,7 +268,7 @@ const teacherCtrl = {
       const teacher = await teacher.find({
         $or: [
           { name: { $regex: new RegExp(searchQuery, "i") } },
-          { expertise: { $regex: new RegExp(searchQuery, "i") } },//what is this?
+          { expertise: { $regex: new RegExp(searchQuery, "i") } }, //what is this?
         ],
       });
 
