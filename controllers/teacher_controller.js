@@ -32,6 +32,23 @@ const teacherCtrl = {
       next(error);
     }
   },
+  becomeStudent: async (req, res, next) => {
+    try {
+      const { email } = req.body;
+      await User.findOneAndUpdate(
+        {
+          email,
+        },
+        { role: "student" }
+      );
+      res.json({
+        success: "true",
+        message: "You have successfully became student",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
   addCategory: async (req, res, next) => {
     try {
       // const { category } = req.body;
@@ -58,7 +75,7 @@ const teacherCtrl = {
       // const { title, description, category } = req.body;
       const result = await CourseSchema.validateAsync(req.body);
       const title = result.title;
-      console.log(req.user);
+      // console.log(req.user);
       const description = result.description;
       const category = result.category;
       const existingTitle = await Course.findOne({ title });
@@ -71,7 +88,7 @@ const teacherCtrl = {
       let newCourse = new Course({
         title,
         description,
-        // thumbnail: req.file.filename,
+        thumbnail: "public/thumbnails" + "/" + req.file.filename,
         createdBy: req.user,
         category,
       });
@@ -96,7 +113,7 @@ const teacherCtrl = {
 
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const { videoTitle, duration } = req.body;
+      const { videoTitle } = req.body;
       const result2 = await videoSchema.validateAsync({ videoTitle });
       const videotitle = result2.videoTitle;
 
@@ -108,6 +125,12 @@ const teacherCtrl = {
             "Some error while creating course.Can't find the course."
           )
         );
+      }
+      if (course.createdBy != req.user._id) {
+        return next(new ErroHandler(400,"You are not the creater of the course"))
+      }
+      if (course.isPublished) {
+        return(new ErrorHandler(400,"You can't add video to published course"))
       }
       console.log(req.file.filename);
       const du = await getVideoDurationInSeconds(
@@ -121,7 +144,7 @@ const teacherCtrl = {
       });
       video = await video.save();
       course.videos.push(video._id);
-      course.duration = duration;
+      // course.duration = duration;
       course = await course.save();
 
       res.json({
@@ -132,33 +155,49 @@ const teacherCtrl = {
       next(e);
     }
   },
+  
   publishCourse: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const { price, category } = req.body;
+      const { price, category ,duration} = req.body;
+      let course= await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "Course not found"));
+      }
+      if (course.createdBy != req.user._id) {
+        return next(
+          new ErrorHandler(400, "You are not the creater of the course")
+        );
+      }
+      if (course.isPublished) {
+        return next(new ErrorHandler(400, "Course is already published"));
+      }
 
       let user = req.user;
       user.createdCourse.push(courseId);
-       user.save();
+      user.save();
       const result2 = await CategorySchema.validateAsync({ category });
       const categoryName = result2.category;
+      course.isPublished = true;
+      course.price = price;
+      course.duration = duration;
 
-      const course = await Course.findByIdAndUpdate(
-        courseId,
-        { isPublished: true, price },
-        { new: true }
-      );
+      // const course = await Course.findByIdAndUpdate(
+      //   courseId,
+      //   { isPublished: true, price },
+      //   { new: true }
+      // );
       let existingCategory = await Category.findOne({ name: categoryName });
       if (!existingCategory) {
         let newCategory = new Category({
           name: category,
-          courses: [course._id],
+          courses: [courseId],
         });
         newCategory.save();
       } else {
-        existingCategory.courses.push(course._id);
+        existingCategory.courses.push(course.Id);
         existingCategory.save();
       }
       res.json({
@@ -170,6 +209,19 @@ const teacherCtrl = {
       next(e);
     }
   },
+  // updateCourse: async (req, res, next) => {
+  //   try {
+  //     const id = req.params.courseId;
+  //     const result = await paramSchema.validateAsync({ params: id });
+  //     const courseId = result.params;
+  //     let course = await Course.findByid(courseId);
+  //     if (!course) {
+  //       return next(new ErrorHandler(400,"Course not found"))
+  //     }
+  //   } catch (e) {
+  //     next(e);
+  //   }
+  // },
   addlecture: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
@@ -181,9 +233,18 @@ const teacherCtrl = {
       if (!course) {
         return next(new ErrorHandler(400, "lecture added successfully"));
       }
+      if (course.createdBy != req.user._id) {
+        return next(
+          new ErrorHandler(400, "You are not the creater of the course")
+        );
+      }
+      const du = await getVideoDurationInSeconds(
+        "public/course_videos" + "/" + req.file.filename
+      );
       let video = new Video({
         videoTitle,
         videoUrl: "public/course_videos" + "/" + req.file.filename,
+        videoDuration:du
       });
       video = await video.save();
       course.videos.push(video._id);
@@ -204,6 +265,9 @@ const teacherCtrl = {
       if (!course) {
         return next(new ErrorHandler(400, "Course not found"));
       }
+      if (course.createdBy != req.user._id) {
+        return next(new ErrorHandler(400,"You are not creater of the course"))
+      }
       const videoIndex = course.videos.indexOf(lectureId);
       if (videoIndex == -1) {
         return next(new ErrorHandler(400, "Lecture not found in the course"));
@@ -217,6 +281,26 @@ const teacherCtrl = {
       });
     } catch (e) {
       next(e);
+    }
+  },
+  searchTeacher: async (req, res, next) => {
+    try {
+      const searchteacher = req.query.q;
+
+      if (!searchteacher) {
+        return res.status(400).json({ error: "Teacher name is required." });
+      }
+
+      const teacher = await teacher.find({
+        $or: [
+          { name: { $regex: new RegExp(searchQuery, "i") } },
+          { expertise: { $regex: new RegExp(searchQuery, "i") } }, //what is this?
+        ],
+      });
+
+      res.json(teacher);
+    } catch (err) {
+      next(err);
     }
   },
 };
