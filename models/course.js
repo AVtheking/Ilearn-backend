@@ -45,18 +45,17 @@ const courseSchema = new mongoose.Schema(
     //default: {1:1, 2:1, 3:1, 4:1, 5:1}}
        default: 0,
     },
-      totalStudents: {
-        type: Number,
-        default: 0,
-      },
-      isPublished: {
-        type: Boolean,
-        default: false,
-      },
-      popularity: {
-        type: Number,
-      }
-    
+    totalStudents: {
+      type: Number,
+      default: 0,
+    },
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
+    popularity:{
+      type:Number,
+    }
   },
   {
     timestamps: true,

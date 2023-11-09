@@ -253,13 +253,15 @@ const courseCtrl = {
       const courseId = req.params.courseId;
       const userId = req.user.id;
 
-            const existingEnrollment = await Enrollment.findOne({ courseId, userId });
-            if (existingEnrollment) {
-              return next(new ErrorHandler(400, "You are already enrolled in this course."));
-            }
+      const existingEnrollment = await Enrollment.findOne({ courseId, userId });
+      if (existingEnrollment) {
+        return next(
+          new ErrorHandler(400, "You are already enrolled in this course.")
+        );
+      }
 
-            const newEnrollment = new Enrollment({ courseId, userId });
-            await newEnrollment.save();
+      const newEnrollment = new Enrollment({ courseId, userId });
+      await newEnrollment.save();
 
       res.json({
         message: "Enrollment successful",
@@ -319,12 +321,12 @@ const courseCtrl = {
         },
       ]);
 
-            if (!popularCourses || popularCourses.length === 0) {
-              // return next(
-              //   new ErrorHandler (400, "No popular courses are available.")
-              // );
-              res.status(400).json("do not have any ")
-            }
+      if (!popularCourses || popularCourses.length === 0) {
+        // return next(
+        //   new ErrorHandler (400, "No popular courses are available.")
+        // );
+        res.status(400).json("do not have any ");
+      }
 
       res.json({
         success: true,
