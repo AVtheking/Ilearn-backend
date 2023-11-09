@@ -160,16 +160,27 @@ const courseCtrl = {
     //   return res.json(JSON.parse(cachedData));
     // }
     try {
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      const limit = parseInt(req.query.limit);
+      const startIndex = (page - 1) * pageSize;
+      // const endIndex = page * pageSize
+
       const categories = await Category.find()
+        .skip(startIndex)
+        .limit(pageSize)
         .populate({
           path: "courses",
           select: "_id title description category price rating duration ",
+          options: {
+            limit: limit ? limit : pageSize,
+          },
           populate: {
             path: "createdBy",
             select: "_id username name",
           },
-        })
-        .lean();
+        });
+      console.log(page);
       const value = {
         success: true,
         message: "Data of all courses in particular category",
@@ -191,20 +202,18 @@ const courseCtrl = {
       const courseid = req.params.courseId;
       const result = await paramSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const user =req.user
+      const user = req.user;
       user.cart.push(courseId);
       await user.save();
       res.json({
         success: true,
         message: "Course added to cart successfully",
-      })
-    }
-    catch (e) {
-      next(e)
+      });
+    } catch (e) {
+      next(e);
     }
   },
-  
- 
+
   searchCourses: async (req, res, next) => {
     try {
       const query = req.query.coursetitle;
@@ -270,7 +279,7 @@ const courseCtrl = {
       const popularCourses = await Course.aggregate([
         {
           $match: {
-            isPopular: true,//there is no field like this
+            isPopular: true, //there is no field like this
             isPublished: true,
           },
         },
@@ -377,7 +386,7 @@ const courseCtrl = {
         },
       });
     } catch (e) {
-    next(e);
+      next(e);
     }
   },
   addToWishlist: async (req, res, next) => {
@@ -400,65 +409,66 @@ const courseCtrl = {
     }
   },
   deleteCourseFromWishlist: async (req, res, next) => {
-  try
-  {  const courseid = req.param.courseId;
-    const result = await paramSchema.validateAsync({ params: courseid });
-    const courseId = result.params;
-    const user = await user.findById(req.user);
-    const courseIndex = user.wishlist.indexOf(courseId);
-    if (courseIndex == -1) {
-      return next(new ErrorHandler(400, "No course found"));
-    }
-    user.wishlist.splice(courseIndex, 1);
-    await user.save();
-    res.json({
-      success: true,
-      message: "Course deleted from wishlist successfully",
-    });
-    }
-  catch (e) {
-    next(e)
+    try {
+      const courseid = req.param.courseId;
+      const result = await paramSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
+      const user = await user.findById(req.user);
+      const courseIndex = user.wishlist.indexOf(courseId);
+      if (courseIndex == -1) {
+        return next(new ErrorHandler(400, "No course found"));
+      }
+      user.wishlist.splice(courseIndex, 1);
+      await user.save();
+      res.json({
+        success: true,
+        message: "Course deleted from wishlist successfully",
+      });
+    } catch (e) {
+      next(e);
     }
   },
 
-    rateCourse : async (req, res, next) => {
+  rateCourse: async (req, res, next) => {
+    try {
+      const { courseId, rating, weight } = req.body;
 
-      try {
-        const { courseId, rating, weight } = req.body;
-    
-        const course = await Course.findById(courseId);
-    
-        if (!course) {
-          return res.status(404).json({ message: 'Course not found' });
-        }
-    
-        course.ratings.push({ 
-          rating, weight 
-        });
-    
-        await course.save();
-    
-        let totalWeightedRating = 0;
-        let totalWeight = 0;
-    
-        for (const r of course.ratings) {
-          totalWeightedRating += r.rating * r.weight;
-          totalWeight += r.weight;
-        }
-    
-        const weightedAverageRating = totalWeightedRating / totalWeight;
+      const course = await Course.findById(courseId);
 
-        course.popularity = calculatePopularity(weightedAverageRating, course.ratings.length);
-    
-        course.averageRating = weightedAverageRating;
-        await course.save();
-    
-        res.json({ message: 'Rating submitted successfully' });
-      } catch (error) {
-        next(error);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
       }
-    },
 
+      course.ratings.push({
+        rating,
+        weight,
+      });
+
+      await course.save();
+
+      let totalWeightedRating = 0;
+      let totalWeight = 0;
+
+      for (const r of course.ratings) {
+        totalWeightedRating += r.rating * r.weight;
+        totalWeight += r.weight;
+      }
+
+      const weightedAverageRating = totalWeightedRating / totalWeight;
+
+      course.popularity = calculatePopularity(
+        weightedAverageRating,
+        course.ratings.length
+      );
+
+      course.averageRating = weightedAverageRating;
+      await course.save();
+
+      res.json({ message: "Rating submitted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = courseCtrl;
