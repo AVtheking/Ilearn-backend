@@ -1,6 +1,12 @@
 const multer = require("multer");
 const path = require("path");
 const { getVideoDurationInSeconds } = require("get-video-duration");
+const fs = require("fs");
+const Videodirectory = "public/course_videos";
+
+if (!fs.existsSync(Videodirectory)) {
+  fs.mkdirSync(Videodirectory);
+}
 
 const videoStorage = multer.diskStorage({
   destination: (req, res, cb) => {
