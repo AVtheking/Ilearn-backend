@@ -4,6 +4,7 @@ const { courseCtrl, videoCtrl } = require("../controllers");
 const courseRouter = express.Router();
 
 courseRouter.get("/getCourse", auth, courseCtrl.getCourses);
+courseRouter.get("/getCourseById/:courseId", auth, courseCtrl.getCourseByid);
 courseRouter.get("/getCourseBycategory/:category",auth,courseCtrl.getCoursesByCategory);
 courseRouter.get("/video/:courseId",auth, videoCtrl.streamVideo);
 courseRouter.get("/getCategoriesName", auth, courseCtrl.getCategoriesName);
