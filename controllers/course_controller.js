@@ -42,7 +42,10 @@ const courseCtrl = {
       const id = req.params.courseId;
       const result = await paramSchema.validateAsync({params: id });
       const courseId = result.params;
-      const course = await Course.findById(courseId);
+      const course = await Course.findById(courseId).populate({
+        path: "createdBy",
+        select: "_id username name",
+      });;
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
       }
