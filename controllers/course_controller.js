@@ -39,7 +39,7 @@ const courseCtrl = {
   getCourseByid: async (req, res, next) => {
     try {
       const id = req.params.courseId;
-      const result = await paramSchema.validateAsync({ id });
+      const result = await paramSchema.validateAsync({params: id });
       const courseId = result.params;
       const course = await Course.findById(courseId);
       if (!course) {
