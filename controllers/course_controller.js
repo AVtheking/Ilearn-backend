@@ -16,7 +16,7 @@ const courseCtrl = {
     //   return res.json(JSON.parse(cachedData));
     // }
     try {
-      const courses = await Course.find()
+      const courses = await Course.find({isPublished: true})
         .sort("-createdAt")
         .populate("videos", "_id videoTitle videoUrl")
         .populate({
