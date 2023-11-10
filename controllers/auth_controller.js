@@ -6,9 +6,8 @@ const { authSchema, passwordSchema } = require("../utils/validator");
 const { User, Otp } = require("../models");
 const shortid = require("shortid");
 require("dotenv").config();
-const redis = require("redis");
-const redisClient = redis.createClient();
-redisClient.connect().catch(console.error);
+// const redis = require("redis");
+// const redisClient = redis.createClient()
 const authCtrl = {
   signUp: async (req, res, next) => {
     try {
