@@ -16,7 +16,7 @@ const courseCtrl = {
     //   return res.json(JSON.parse(cachedData));
     // }
     try {
-      const courses = await Course.find()
+      const courses = await Course.find({isPublished: true})
         .sort("-createdAt")
         .populate("videos", "_id videoTitle videoUrl")
         .populate({
@@ -42,7 +42,7 @@ const courseCtrl = {
       const id = req.param.id;
       const result = await paramSchema.validateAsync({ id });
       const courseId = result.params;
-      const course = await Course.findById(courseId);
+      const course = await Course.findById(courseId,{isPublished: true});
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
       }
