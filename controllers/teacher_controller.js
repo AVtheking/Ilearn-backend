@@ -183,6 +183,7 @@ const teacherCtrl = {
       course.isPublished = true;
       course.price = price;
       course.duration = duration;
+      await course.save();
 
       // const course = await Course.findByIdAndUpdate(
       //   courseId,
