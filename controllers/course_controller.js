@@ -20,6 +20,8 @@ const courseCtrl = {
       const pageSize = parseInt(req.query.pagesize);
       // const limit = req.query.limit
       const startIndex = (page - 1) * pageSize;
+      const coursesCount = await Course.countDocuments();
+      const totalPages = Math.ceil(coursesCount / pageSize);
 
       // const courses = await Course.find({ isPublished: true })
       //   .sort("-createdAt")
@@ -74,6 +76,7 @@ const courseCtrl = {
         message: "list of all courses",
         data: {
           courses,
+          totalPages,
         },
       };
       res.json(value);
@@ -92,6 +95,7 @@ const courseCtrl = {
         isPublished: 0,
         updatedAt: 0,
         __v: 0,
+        ratings: 0,
       })
         .populate({
           path: "createdBy",
