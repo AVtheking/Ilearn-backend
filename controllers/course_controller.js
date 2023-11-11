@@ -16,13 +16,58 @@ const courseCtrl = {
     //   return res.json(JSON.parse(cachedData));
     // }
     try {
-      const courses = await Course.find({ isPublished: true })
-        .sort("-createdAt")
-        .populate("videos", "_id videoTitle videoUrl")
-        .populate({
-          path: "createdBy",
-          select: "_id username name",
-        });
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      // const limit = req.query.limit
+      const startIndex = (page - 1) * pageSize;
+
+      // const courses = await Course.find({ isPublished: true })
+      //   .sort("-createdAt")
+      //   .skip(startIndex)
+      //   .limit(pageSize)
+      const courses = await Course.aggregate([
+        {
+          $match: {
+            isPublished: true,
+          },
+        },
+        {
+          $skip: startIndex,
+        },
+        {
+          $limit: pageSize,
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "createdBy",
+            foreignField: "_id",
+            as: "createdBy",
+          },
+        },
+        {
+          $project: {
+            ratings: 0,
+            videos: 0,
+            isPublished: 0,
+            updatedAt: 0,
+            ownedBy: 0,
+            __v: 0,
+            createdBy: {
+              email: 0,
+              password: 0,
+              verify: 0,
+              role: 0,
+              shortId: 0,
+              __v: 0,
+              createdCourse: 0,
+              ownedCourse: 0,
+              cart: 0,
+              wishlist: 0,
+            },
+          },
+        },
+      ]);
       // .populate("createdBy", "_id username name createdCourse ");
       const value = {
         success: true,
@@ -46,7 +91,7 @@ const courseCtrl = {
         isPublished: true,
         isPublished: 0,
         updatedAt: 0,
-        __v:0,
+        __v: 0,
       })
         .populate({
           path: "createdBy",
@@ -197,7 +242,6 @@ const courseCtrl = {
           },
         });
       console.log(page);
-     
 
       // const totalPages = Math.ceil(categories.length / pageSize);
 
@@ -207,7 +251,6 @@ const courseCtrl = {
         data: {
           categories,
           totalPages,
-         
         },
       };
 
@@ -239,8 +282,6 @@ const courseCtrl = {
   searchCourses: async (req, res, next) => {
     try {
       const query = req.query.coursetitle;
-
-     
     } catch (error) {
       //res.status(500).json({ error: 'Error searching for courses.' });
       next(error);
