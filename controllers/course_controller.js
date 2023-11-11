@@ -147,7 +147,7 @@ const courseCtrl = {
     //   return res.json(JSON.parse(cachedData));
     // }
     try {
-      const categories = await Category.find().lean();
+      const categories = await Category.find();
       const categoryName = categories.map((category) => category.name);
       const value = {
         success: true,
