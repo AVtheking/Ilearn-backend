@@ -44,10 +44,18 @@ const courseCtrl = {
       const courseId = result.params;
       const course = await Course.findById(courseId, {
         isPublished: true,
-      }).populate({
-        path: "createdBy",
-        select: "_id username name",
-      });
+        isPublished: 0,
+        updatedAt: 0,
+        __v:0,
+      })
+        .populate({
+          path: "createdBy",
+          select: "_id username name",
+        })
+        .populate({
+          path: "videos",
+          select: "_id videoTitle videoUrl videoDuration",
+        });
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
       }
