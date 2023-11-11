@@ -223,6 +223,31 @@ const teacherCtrl = {
   //     next(e);
   //   }
   // },
+  deleteCourse: async (req, res, next) => {
+    try {
+      const params = req.params.courseId;
+      const result = await paramSchema.validateAsync({ params });
+      const courseId = result.params;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(404, "Course not found"));
+      }
+      if (course.createdBy != req.user._id) {
+        return next(
+          new ErrorHandler(400, "You are not the creater of the course")
+        );
+      }
+      for (videos in course.videos) {
+        await Video.findByIdAndRemove(videos);
+      }
+      await Course.findByIdAndRemove(courseId);
+      res.json({
+        success: true,
+        message: "Course deleted successfully",
+      });
+    } catch (e) {
+      next(e);
+    }
   addlecture: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;

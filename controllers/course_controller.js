@@ -178,6 +178,8 @@ const courseCtrl = {
       const limit = parseInt(req.query.limit);
       const startIndex = (page - 1) * pageSize;
       // const endIndex = page * pageSize
+      const categoriesCount = await Category.countDocuments();
+      const totalPages = Math.ceil(categoriesCount / pageSize);
 
       const categories = await Category.find()
         .skip(startIndex)
@@ -188,17 +190,24 @@ const courseCtrl = {
           options: {
             limit: limit ? limit : pageSize,
           },
+
           populate: {
             path: "createdBy",
             select: "_id username name",
           },
         });
       console.log(page);
+     
+
+      // const totalPages = Math.ceil(categories.length / pageSize);
+
       const value = {
         success: true,
-        message: "Data of all courses in particular category",
+        message: "Data of all courses in a particular category",
         data: {
           categories,
+          totalPages,
+         
         },
       };
 
@@ -231,30 +240,7 @@ const courseCtrl = {
     try {
       const query = req.query.coursetitle;
 
-      // const courses = await Course.find({
-      //   $or: [
-      //     { title: { $regex: query, $options: "i" } },
-      //     { description: { $regex: query, $options: "i" } },
-      //   ],
-      // });
-
-      // res.render("course-search", { courses });
-      // const courses = await Course.find();
-      // const options = {
-      //   keys: ['title'],
-      //   includeScore: true,
-
-      // }
-      // const fuse = new Fuse(courses, options);
-      // const searchquery = req.query.coursetitle
-      // const results = fuse.search(searchquery);
-      // res.json({
-      //   success: true,
-      //   message: "List of courses",
-      //   data: {
-      //     results
-      //   }x`
-      // })
+     
     } catch (error) {
       //res.status(500).json({ error: 'Error searching for courses.' });
       next(error);
