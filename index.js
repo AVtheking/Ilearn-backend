@@ -49,37 +49,37 @@ app.use(commentRouter, errorMiddleware);
 const PORT = process.env.PORT || 5000;
 
 //socket connection here
-io.on("connection", (socket) => {
-  console.log(`A socket connection to the server has been made: ${socket.id}`);
-  socket.on("joinCourseChat", (courseId) => {
-    socket.join(courseId);
-    socket.emit("chatMessage", {
-      text: `Welcome to the chat for course ${courseId}`,
-      sender: "System",
-    });
+// io.on("connection", (socket) => {
+//   console.log(`A socket connection to the server has been made: ${socket.id}`);
+//   socket.on("joinCourseChat", (courseId) => {
+//     socket.join(courseId);
+//     socket.emit("chatMessage", {
+//       text: `Welcome to the chat for course ${courseId}`,
+//       sender: "System",
+//     });
 
-    socket.on("sendMessage", async (message) => {
-      const chatMessage = new Message({
-        courseId,
-        text: message.text,
-        user: message.user,
-      });
-      await chatMessage.save();
+//     socket.on("sendMessage", async (message) => {
+//       const chatMessage = new Message({
+//         courseId,
+//         text: message.text,
+//         user: message.user,
+//       });
+//       await chatMessage.save();
 
-      io.to(courseId).emit("chatMessage", chatMessage);
-    });
-  });
-  // socket.on("message", async (msg) => {
-  //   console.log("received a message", msg);
-  //   const { text, userId } = msg;
-  //   let message = new Message({
-  //     text,
-  //     user: userId,
-  //   });
-  //   message = await message.save();
-  //   io.emit("message", msg);
-  // });
-});
+//       io.to(courseId).emit("chatMessage", chatMessage);
+//     });
+//   });
+//   // socket.on("message", async (msg) => {
+//   //   console.log("received a message", msg);
+//   //   const { text, userId } = msg;
+//   //   let message = new Message({
+//   //     text,
+//   //     user: userId,
+//   //   });
+//   //   message = await message.save();
+//   //   io.emit("message", msg);
+//   // });
+// });
 
 mongoose.connect(process.env.DB).then(() => {
   console.log("connection is successful");

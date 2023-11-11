@@ -16,13 +16,58 @@ const courseCtrl = {
     //   return res.json(JSON.parse(cachedData));
     // }
     try {
-      const courses = await Course.find({isPublished: true})
-        .sort("-createdAt")
-        .populate("videos", "_id videoTitle videoUrl")
-        .populate({
-          path: "createdBy",
-          select: "_id username name",
-        });
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      // const limit = req.query.limit
+      const startIndex = (page - 1) * pageSize;
+
+      // const courses = await Course.find({ isPublished: true })
+      //   .sort("-createdAt")
+      //   .skip(startIndex)
+      //   .limit(pageSize)
+      const courses = await Course.aggregate([
+        {
+          $match: {
+            isPublished: true,
+          },
+        },
+        {
+          $skip: startIndex,
+        },
+        {
+          $limit: pageSize,
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "createdBy",
+            foreignField: "_id",
+            as: "createdBy",
+          },
+        },
+        {
+          $project: {
+            ratings: 0,
+            videos: 0,
+            isPublished: 0,
+            updatedAt: 0,
+            ownedBy: 0,
+            __v: 0,
+            createdBy: {
+              email: 0,
+              password: 0,
+              verify: 0,
+              role: 0,
+              shortId: 0,
+              __v: 0,
+              createdCourse: 0,
+              ownedCourse: 0,
+              cart: 0,
+              wishlist: 0,
+            },
+          },
+        },
+      ]);
       // .populate("createdBy", "_id username name createdCourse ");
       const value = {
         success: true,
@@ -39,10 +84,23 @@ const courseCtrl = {
   },
   getCourseByid: async (req, res, next) => {
     try {
-      const id = req.param.id;
-      const result = await paramSchema.validateAsync({ id });
+      const id = req.params.courseId;
+      const result = await paramSchema.validateAsync({ params: id });
       const courseId = result.params;
-      const course = await Course.findById(courseId,{isPublished: true});
+      const course = await Course.findById(courseId, {
+        isPublished: true,
+        isPublished: 0,
+        updatedAt: 0,
+        __v: 0,
+      })
+        .populate({
+          path: "createdBy",
+          select: "_id username name",
+        })
+        .populate({
+          path: "videos",
+          select: "_id videoTitle videoUrl videoDuration",
+        });
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
       }
@@ -134,7 +192,7 @@ const courseCtrl = {
     //   return res.json(JSON.parse(cachedData));
     // }
     try {
-      const categories = await Category.find().lean();
+      const categories = await Category.find();
       const categoryName = categories.map((category) => category.name);
       const value = {
         success: true,
@@ -165,6 +223,8 @@ const courseCtrl = {
       const limit = parseInt(req.query.limit);
       const startIndex = (page - 1) * pageSize;
       // const endIndex = page * pageSize
+      const categoriesCount = await Category.countDocuments();
+      const totalPages = Math.ceil(categoriesCount / pageSize);
 
       const categories = await Category.find()
         .skip(startIndex)
@@ -175,17 +235,22 @@ const courseCtrl = {
           options: {
             limit: limit ? limit : pageSize,
           },
+
           populate: {
             path: "createdBy",
             select: "_id username name",
           },
         });
       console.log(page);
+
+      // const totalPages = Math.ceil(categories.length / pageSize);
+
       const value = {
         success: true,
-        message: "Data of all courses in particular category",
+        message: "Data of all courses in a particular category",
         data: {
           categories,
+          totalPages,
         },
       };
 
@@ -217,31 +282,6 @@ const courseCtrl = {
   searchCourses: async (req, res, next) => {
     try {
       const query = req.query.coursetitle;
-
-      // const courses = await Course.find({
-      //   $or: [
-      //     { title: { $regex: query, $options: "i" } },
-      //     { description: { $regex: query, $options: "i" } },
-      //   ],
-      // });
-
-      // res.render("course-search", { courses });
-      // const courses = await Course.find();
-      // const options = {
-      //   keys: ['title'],
-      //   includeScore: true,
-
-      // }
-      // const fuse = new Fuse(courses, options);
-      // const searchquery = req.query.coursetitle
-      // const results = fuse.search(searchquery);
-      // res.json({
-      //   success: true,
-      //   message: "List of courses",
-      //   data: {
-      //     results
-      //   }x`
-      // })
     } catch (error) {
       //res.status(500).json({ error: 'Error searching for courses.' });
       next(error);
