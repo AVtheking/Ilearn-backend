@@ -56,7 +56,7 @@ const videoSchema = Joi.object({
   videoTitle: Joi.string().required().trim(),
   // videoUrl: Joi.string().required(),
 });
-const paramSchema = Joi.object({
+const courseIdSchema = Joi.object({
   params: Joi.string().required(),
 });
 module.exports = {
@@ -65,5 +65,5 @@ module.exports = {
   CategorySchema,
   CourseSchema,
   videoSchema,
-  paramSchema,
+  courseIdSchema,
 };
