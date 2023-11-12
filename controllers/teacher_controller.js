@@ -11,7 +11,7 @@ const {
   CategorySchema,
   CourseSchema,
   videoSchema,
-  paramSchema,
+  courseIdSchema,
 } = require("../utils/validator");
 
 const teacherCtrl = {
@@ -110,9 +110,8 @@ const teacherCtrl = {
   uploadVideo_toCourse: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
-   
 
-      const result = await paramSchema.validateAsync({ params: courseid });
+      const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const { videoTitle } = req.body;
       const result2 = await videoSchema.validateAsync({ videoTitle });
@@ -128,7 +127,7 @@ const teacherCtrl = {
           )
         );
       }
-    
+
       if (course.isPublished) {
         return new ErrorHandler(400, "You can't add video to published course");
       }
@@ -137,14 +136,13 @@ const teacherCtrl = {
       console.log(notesfile);
       // console.log(file);
 
-  
       console.log(notesfile[0].filename);
       course.notes.push("public/course_notes" + "/" + notesfile[0].filename);
 
-      const du = await  getVideoDurationInSeconds(
+      const du = await getVideoDurationInSeconds(
         "public/course_videos" + "/" + videofile[0].filename
       );
-      console.log(du)
+      console.log(du);
       let video = new Video({
         videoTitle: videotitle,
         videoUrl: "public/course_videos" + "/" + videofile[0].filename,
@@ -167,7 +165,7 @@ const teacherCtrl = {
   publishCourse: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
-      const result = await paramSchema.validateAsync({ params: courseid });
+      const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const { price, category, duration } = req.body;
       let course = await Course.findById(courseId);
@@ -221,7 +219,7 @@ const teacherCtrl = {
   // updateCourse: async (req, res, next) => {
   //   try {
   //     const id = req.params.courseId;
-  //     const result = await paramSchema.validateAsync({ params: id });
+  //     const result = await courseIdSchema.validateAsync({ params: id });
   //     const courseId = result.params;
   //     let course = await Course.findByid(courseId);
   //     if (!course) {
@@ -234,7 +232,7 @@ const teacherCtrl = {
   deleteCourse: async (req, res, next) => {
     try {
       const params = req.params.courseId;
-      const result = await paramSchema.validateAsync({ params });
+      const result = await courseIdSchema.validateAsync({ params });
       const courseId = result.params;
       const course = await Course.findById(courseId);
       if (!course) {

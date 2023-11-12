@@ -1,7 +1,7 @@
 const { Course, Category, User } = require("../models");
 const ErrorHandler = require("../middlewares/error");
 // const redis = require("redis");
-const { paramSchema } = require("../utils/validator");
+const { courseIdSchema } = require("../utils/validator");
 //const Enrollment = require('../models/Enrollment');
 
 // const redisClient = redis.createClient();
@@ -88,7 +88,7 @@ const courseCtrl = {
   getCourseByid: async (req, res, next) => {
     try {
       const id = req.params.courseId;
-      const result = await paramSchema.validateAsync({ params: id });
+      const result = await courseIdSchema.validateAsync({ params: id });
       const courseId = result.params;
       const course = await Course.findById(courseId, {
         isPublished: true,
@@ -120,7 +120,7 @@ const courseCtrl = {
     }
   },
   getCoursesByCategory: async (req, res, next) => {
-    const key = req.originalUrl;
+    // const key = req.originalUrl;
     // const cachedData = await redisClient.get(key);
     // if (cachedData) {
     //   return res.json(JSON.parse(cachedData));
@@ -269,7 +269,7 @@ const courseCtrl = {
   addCourseToCart: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
-      const result = await paramSchema.validateAsync({ params: courseid });
+      const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const user = req.user;
       user.cart.push(courseId);
@@ -386,7 +386,7 @@ const courseCtrl = {
   deleteCourseFromCart: async (req, res, next) => {
     try {
       const courseid = req.param.courseId;
-      const result = await paramSchema.validateAsync({ params: courseid });
+      const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const user = await User.findById(courseId);
       const courseIndex = user.cart.indexOf(courseId);
@@ -436,7 +436,7 @@ const courseCtrl = {
   addToWishlist: async (req, res, next) => {
     try {
       const courseid = req.param.courseId;
-      const result = await paramSchema.validateAsync({ params: courseid });
+      const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const user = await User.findById(req.user);
       user.wishlist.push(courseId);
@@ -455,7 +455,7 @@ const courseCtrl = {
   deleteCourseFromWishlist: async (req, res, next) => {
     try {
       const courseid = req.param.courseId;
-      const result = await paramSchema.validateAsync({ params: courseid });
+      const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const user = await user.findById(req.user);
       const courseIndex = user.wishlist.indexOf(courseId);
@@ -511,6 +511,23 @@ const courseCtrl = {
       res.json({ message: "Rating submitted successfully" });
     } catch (error) {
       next(error);
+    }
+  },
+  downloadNotes: async (req, res, next) => {
+    try {
+      const courseid = req.params.courseId;
+      const path = req.query.path;
+      const result = await courseIdSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
+      const course = await Course.findById(courseId);
+      const notesIndex = course.notes.indexOf(path);
+      if (notesIndex == -1) {
+        return next(new ErrorHandler(400, "No notes found"));
+      }
+
+      res.download(path, notesIndex + "-" + "notes.pdf");
+    } catch (e) {
+      next(e);
     }
   },
 };
