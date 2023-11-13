@@ -2,11 +2,6 @@ const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
 const { getVideoDurationInSeconds } = require("get-video-duration");
 const fs = require("fs");
-const { Worker } = require("worker_threads");
-
-// const Ffmpeg = require("fluent-ffmpeg");
-// Ffmpeg.setFfmpegPath("C:ffmpeg\\bin\\ffmpeg.exe");
-// Ffmpeg.setFfprobePath("C:ffmpeg\\bin\\ffprobe.exe");
 
 const path = require("path");
 
@@ -15,6 +10,7 @@ const {
   CourseSchema,
   videoSchema,
   courseIdSchema,
+  publishCourseSchema,
 } = require("../utils/validator");
 
 const createConversionWorker = require("../utils/videoConverter");
@@ -60,35 +56,84 @@ const teacherCtrl = {
       next(e);
     }
   },
-  addCategory: async (req, res, next) => {
+  getCreatedCourses: async (req, res, next) => {
     try {
-      // const { category } = req.body;
-      const result = await CategorySchema.validateAsync(req.body);
-      const category = result.category;
-      const existingCategory = await Category.findOne({ category });
-      if (existingCategory) {
-        return next(new ErrorHandler(400, "This Category already exists"));
-      }
-      let newCategory = new Category({
-        name: category,
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      const skip = (page - 1) * pageSize;
+      const totalCourses = await Courses.countDocuments({
+        createdBy: req.user._id,
       });
-      newCategory = await newCategory.save();
+      const totalPages = Math.ceil(totalCourses / pageSize);
+      const courses = await Courses.aggregate([
+        {
+          $match: { createdBy: req.user._id },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: pageSize,
+        },
+        {
+          $project: {
+            title: 1,
+            description: 1,
+            thumbnail: 1,
+            price: 1,
+            duration: 1,
+            rating: 1,
+            category: 1,
+
+            createdAt: 1,
+            updatedAt: 1,
+            totalStudents: 1,
+          },
+        },
+      ]);
       res.json({
         success: true,
-        message: "A new category has been created",
+        message: "Courses fetched successfully",
+        data: {
+          courses,
+          totalCourses,
+          totalPages,
+        },
       });
     } catch (e) {
       next(e);
     }
   },
+
+  // addCategory: async (req, res, next) => {
+  //   try {
+
+  //     const result = await CategorySchema.validateAsync(req.body);
+  //     const category = result.category;
+  //     const existingCategory = await Category.findOne({ category });
+  //     if (existingCategory) {
+  //       return next(new ErrorHandler(400, "This Category already exists"));
+  //     }
+  //     let newCategory = new Category({
+  //       name: category,
+  //     });
+  //     newCategory = await newCategory.save();
+  //     res.json({
+  //       success: true,
+  //       message: "A new category has been created",
+  //     });
+  //   } catch (e) {
+  //     next(e);
+  //   }
+  // },
   createCourse: async (req, res, next) => {
     try {
-      // const { title, description, category } = req.body;
       const result = await CourseSchema.validateAsync(req.body);
-      const title = result.title;
-      // console.log(req.user);
-      const description = result.description;
-      const category = result.category;
+      const { title, description, category } = result;
+
       const existingTitle = await Course.findOne({ title });
       if (existingTitle) {
         return next(
@@ -122,7 +167,7 @@ const teacherCtrl = {
     let noteFilePath, videoFilePath, inputFilePath, inputFileName;
     try {
       const courseid = req.params.courseId;
-      console.log(courseid);
+      // console.log(courseid);
 
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
@@ -150,12 +195,13 @@ const teacherCtrl = {
 
       const notesfile = req.files.notes;
       const videofile = req.files.video;
-      // console.log(notesfile);
 
       noteFilePath = "public/course_notes" + "/" + notesfile[0].filename;
       videoFilePath = "public/course_videos" + "/" + videofile[0].filename;
-      console.log(notesfile[0].filename);
+
       course.notes.push(noteFilePath);
+
+      //Video Conversion using worker threads
       const conversionPromise = resolutions.map((resolution) => {
         inputFilePath = videoFilePath;
         inputFileName = path.basename(
@@ -171,8 +217,9 @@ const teacherCtrl = {
       await Promise.all(conversionPromise);
       console.log("Video conversion completed");
 
+      //calculate video duration
       const du = await getVideoDurationInSeconds(videoFilePath);
-      console.log(du);
+
       let video = new Video({
         videoTitle: videotitle,
         videoUrl: videoFilePath,
@@ -214,7 +261,9 @@ const teacherCtrl = {
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-      const { price, category, duration } = req.body;
+     
+      const result2 = await publishCourseSchema.validateAsync(req.body);
+      const { price, duration, category } = result2;
       let course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(400, "Course not found"));
@@ -231,14 +280,13 @@ const teacherCtrl = {
       let user = req.user;
       user.createdCourse.push(courseId);
       user.save();
-      const result2 = await CategorySchema.validateAsync({ category });
-      const categoryName = result2.category;
+
       course.isPublished = true;
       course.price = price;
       course.duration = duration;
       await course.save();
 
-      let existingCategory = await Category.findOne({ name: categoryName });
+      let existingCategory = await Category.findOne({ name: category });
       if (!existingCategory) {
         let newCategory = new Category({
           name: category,
