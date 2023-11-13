@@ -1,11 +1,14 @@
 const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
 const { getVideoDurationInSeconds } = require("get-video-duration");
+const fs = require("fs");
+const { Worker } = require("worker_threads");
+
 // const Ffmpeg = require("fluent-ffmpeg");
 // Ffmpeg.setFfmpegPath("C:ffmpeg\\bin\\ffmpeg.exe");
 // Ffmpeg.setFfprobePath("C:ffmpeg\\bin\\ffprobe.exe");
-const { scanVideo } = require("ffmpeg-progress");
-const mongoose = require("mongoose");
+
+const path = require("path");
 
 const {
   CategorySchema,
@@ -13,6 +16,13 @@ const {
   videoSchema,
   courseIdSchema,
 } = require("../utils/validator");
+
+const createConversionWorker = require("../utils/videoConverter");
+const resolutions = [
+  { name: "144p", width: 256, height: 144 },
+  { name: "360p", width: 640, height: 360 },
+  { name: "720p", width: 1280, height: 720 },
+];
 
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
@@ -107,18 +117,22 @@ const teacherCtrl = {
       next(e);
     }
   },
+
   uploadVideo_toCourse: async (req, res, next) => {
     let noteFilePath, videoFilePath;
     try {
       const courseid = req.params.courseId;
+      console.log(courseid);
 
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const { videoTitle } = req.body;
       const result2 = await videoSchema.validateAsync({ videoTitle });
       const videotitle = result2.videoTitle;
+      console.log("here")
 
       let course = await Course.findById(courseId);
+      console.log("here")
       if (!course) {
         return next(
           new ErrorHandler(
@@ -129,8 +143,10 @@ const teacherCtrl = {
       }
 
       if (course.isPublished) {
-        return new ErrorHandler(400, "You can't add video to published course");
+        console.log("here")
+        return (next(new ErrorHandler(400, "You can't add video to published course")));
       }
+      console.log("here")
       const notesfile = req.files.notes;
       const videofile = req.files.video;
       console.log(notesfile);
@@ -139,6 +155,20 @@ const teacherCtrl = {
       videoFilePath = "public/course_videos" + "/" + videofile[0].filename;
       console.log(notesfile[0].filename);
       course.notes.push(noteFilePath);
+      const conversionPromise = resolutions.map((resolution) => {
+        const inputFilePath = videoFilePath;
+        const inputFileName = path.basename(
+          inputFilePath,
+          path.extname(inputFilePath)
+        );
+        // console.log(resolution);
+        const outputPath = `public/course_videos/${inputFileName}-${
+          resolution.name
+        }.${path.extname(inputFilePath)}`;
+        return createConversionWorker(resolution, inputFilePath, outputPath);
+      });
+      await Promise.all(conversionPromise);
+      console.log("Video conversion completed");
 
       const du = await getVideoDurationInSeconds(videoFilePath);
       console.log(du);
@@ -159,6 +189,7 @@ const teacherCtrl = {
     } catch (e) {
       if (noteFilePath) {
         fs.unlinkSync(noteFilePath);
+        console.log("note file deleted");
       }
       if (videoFilePath) {
         fs.unlinkSync(videoFilePath);
@@ -246,7 +277,7 @@ const teacherCtrl = {
       }
       for (const videoId of course.videos) {
         const video = await Video.findById(videoId);
-  
+
         if (video) {
           await Video.findByIdAndDelete(videoId);
           fs.unlinkSync(video.videoUrl);
@@ -319,7 +350,7 @@ const teacherCtrl = {
       if (video) {
         await course.videos.splice(videoIndex, 1);
         await course.save();
-  
+
         await Video.findByIdAndDelete(lectureId);
         fs.unlinkSync(video.videoUrl);
       }

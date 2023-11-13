@@ -12,5 +12,6 @@ teacherRouter.post("/add-category", auth, teacherCtrl.addCategory)
 teacherRouter.patch("/add-lecture/:courseId", auth, uploadVideo, teacherCtrl.addlecture)
 teacherRouter.delete("/remove-lecture/:courseId/lecture/:lectureId",auth,teacherCtrl.removeLecture)
 teacherRouter.get('/search-teacher', teacherCtrl.searchTeacher);
+teacherRouter.delete("/delete-course/:courseId", auth, teacherCtrl.deleteCourse)
 
 module.exports = teacherRouter;
