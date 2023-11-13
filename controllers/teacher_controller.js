@@ -99,7 +99,7 @@ const teacherCtrl = {
       let newCourse = new Course({
         title,
         description,
-        thumbnail: "public/thumbnails" + "/" + req.file.filename,
+        thumbnail: "public/thumbnail" + "/" + req.file.filename,
         createdBy: req.user,
         category,
       });
@@ -129,10 +129,9 @@ const teacherCtrl = {
       const { videoTitle } = req.body;
       const result2 = await videoSchema.validateAsync({ videoTitle });
       const videotitle = result2.videoTitle;
-      console.log("here")
 
       let course = await Course.findById(courseId);
-      console.log("here")
+
       if (!course) {
         return next(
           new ErrorHandler(
@@ -143,10 +142,11 @@ const teacherCtrl = {
       }
 
       if (course.isPublished) {
-        console.log("here")
-        return (next(new ErrorHandler(400, "You can't add video to published course")));
+        return next(
+          new ErrorHandler(400, "You can't add video to published course")
+        );
       }
-      console.log("here")
+
       const notesfile = req.files.notes;
       const videofile = req.files.video;
       console.log(notesfile);
@@ -161,7 +161,7 @@ const teacherCtrl = {
           inputFilePath,
           path.extname(inputFilePath)
         );
-        // console.log(resolution);
+
         const outputPath = `public/course_videos/${inputFileName}-${
           resolution.name
         }.${path.extname(inputFilePath)}`;
@@ -209,7 +209,7 @@ const teacherCtrl = {
       if (!course) {
         return next(new ErrorHandler(400, "Course not found"));
       }
-      if (course.createdBy != req.user._id) {
+      if (!course.createdBy.equals(req.user._id)) {
         return next(
           new ErrorHandler(400, "You are not the creater of the course")
         );
@@ -248,19 +248,56 @@ const teacherCtrl = {
       next(e);
     }
   },
-  // updateCourse: async (req, res, next) => {
-  //   try {
-  //     const id = req.params.courseId;
-  //     const result = await courseIdSchema.validateAsync({ params: id });
-  //     const courseId = result.params;
-  //     let course = await Course.findByid(courseId);
-  //     if (!course) {
-  //       return next(new ErrorHandler(400,"Course not found"))
-  //     }
-  //   } catch (e) {
-  //     next(e);
-  //   }
-  // },
+  updateCourse: async (req, res, next) => {
+    try {
+      const id = req.params.courseId;
+      const result = await courseIdSchema.validateAsync({ params: id });
+      const courseId = result.params;
+   
+      const result2 = await CourseSchema.validateAsync(req.body);
+      const { title, description, category } = result2;
+      await Course.findByIdAndUpdate(courseId, {
+        title,
+        description,
+        category,
+      });
+      res.json({
+        success: true,
+        message: "Course updated successfully",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  changeThumbnail: async (req, res, next) => {
+    try {
+      const courseid = req.params.courseId;
+      const result = await courseIdSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
+      if (!course.createdBy.equals(req.user._id)) {
+        return next(new ErrorHandler(401, "You are not the creater of course"));
+      }
+      if (!req.file) {
+        return next(new ErrorHandler(400, "Please upload a file"));
+      }
+      let course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "Course not found"));
+      }
+      fs.unlinkSync(course.thumbnail);
+      course.thumbnail = "public/thumbnail" + "/" + req.file.filename;
+      // await Course.findByIdAndUpdate(courseId, {
+      //   thumbnail: "public/thumbnail" + "/" + req.file.filename,
+      // });
+      await course.save();
+      res.json({
+        success: true,
+        message: "Thumbnail changed successfully",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
   deleteCourse: async (req, res, next) => {
     try {
       const params = req.params.courseId;
@@ -296,14 +333,13 @@ const teacherCtrl = {
     try {
       const courseId = req.params.courseId;
 
-      // const { videoTitle } = req.body;
       const result = await videoSchema.validateAsync(req.body);
       const videoTitle = result.videoTitle;
       let course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(400, "lecture added successfully"));
       }
-      if (course.createdBy != req.user._id) {
+      if (!course.createdBy.equals(req.user._id)) {
         return next(
           new ErrorHandler(400, "You are not the creater of the course")
         );
@@ -331,12 +367,12 @@ const teacherCtrl = {
     try {
       const courseId = req.params.courseId;
       const lectureId = req.params.lectureId;
-      // console.log(req.user._id);
+
       const course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(400, "Course not found"));
       }
-      // console.log(course.createdBy, req.user._id);
+
       if (!course.createdBy.equals(req.user._id)) {
         return next(new ErrorHandler(400, "You are not creater of the course"));
       }
@@ -344,7 +380,7 @@ const teacherCtrl = {
       if (videoIndex == -1) {
         return next(new ErrorHandler(400, "Lecture not found in the course"));
       }
-      // fs.unlinkSync(course.videos[videoIndex].videoUrl);
+
       const video = await Video.findById(lectureId);
 
       if (video) {
@@ -354,8 +390,7 @@ const teacherCtrl = {
         await Video.findByIdAndDelete(lectureId);
         fs.unlinkSync(video.videoUrl);
       }
-      // await course.save();
-      // await Video.findByIdAndDelete(lectureId);
+
       res.json({
         success: true,
         message: "Lecture removed successfully",
