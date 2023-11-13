@@ -119,7 +119,7 @@ const teacherCtrl = {
   },
 
   uploadVideo_toCourse: async (req, res, next) => {
-    let noteFilePath, videoFilePath;
+    let noteFilePath, videoFilePath, inputFilePath, inputFileName;
     try {
       const courseid = req.params.courseId;
       console.log(courseid);
@@ -141,30 +141,31 @@ const teacherCtrl = {
         );
       }
 
+      if (!course.createdBy.equals(req.user._id)) {
+        return next(new ErrorHandler(400, "You are not the creater of course"));
+      }
       if (course.isPublished) {
-        return next(
-          new ErrorHandler(400, "You can't add video to published course")
-        );
+        return next(new ErrorHandler(400, "Course is already published"));
       }
 
       const notesfile = req.files.notes;
       const videofile = req.files.video;
-      console.log(notesfile);
+      // console.log(notesfile);
 
       noteFilePath = "public/course_notes" + "/" + notesfile[0].filename;
       videoFilePath = "public/course_videos" + "/" + videofile[0].filename;
       console.log(notesfile[0].filename);
       course.notes.push(noteFilePath);
       const conversionPromise = resolutions.map((resolution) => {
-        const inputFilePath = videoFilePath;
-        const inputFileName = path.basename(
+        inputFilePath = videoFilePath;
+        inputFileName = path.basename(
           inputFilePath,
           path.extname(inputFilePath)
         );
 
         const outputPath = `public/course_videos/${inputFileName}-${
           resolution.name
-        }.${path.extname(inputFilePath)}`;
+        }${path.extname(inputFilePath)}`;
         return createConversionWorker(resolution, inputFilePath, outputPath);
       });
       await Promise.all(conversionPromise);
@@ -175,6 +176,15 @@ const teacherCtrl = {
       let video = new Video({
         videoTitle: videotitle,
         videoUrl: videoFilePath,
+        videoUrl_144p: `public/course_videos/${inputFileName}-144p${path.extname(
+          inputFilePath
+        )}`,
+        videoUrl_360p: `public/course_videos/${inputFileName}-360p${path.extname(
+          inputFilePath
+        )}`,
+        videoUrl_720p: `public/course_videos/${inputFileName}-720p${path.extname(
+          inputFilePath
+        )}`,
         videoDuration: du,
       });
       video = await video.save();
@@ -253,7 +263,7 @@ const teacherCtrl = {
       const id = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: id });
       const courseId = result.params;
-   
+
       const result2 = await CourseSchema.validateAsync(req.body);
       const { title, description, category } = result2;
       await Course.findByIdAndUpdate(courseId, {
@@ -312,13 +322,20 @@ const teacherCtrl = {
           new ErrorHandler(400, "You are not the creater of the course")
         );
       }
+      fs.unlinkSync(course.thumbnail);
       for (const videoId of course.videos) {
         const video = await Video.findById(videoId);
 
         if (video) {
           await Video.findByIdAndDelete(videoId);
           fs.unlinkSync(video.videoUrl);
+          fs.unlinkSync(video.videoUrl_144p);
+          fs.unlinkSync(video.videoUrl_360p);
+          fs.unlinkSync(video.videoUrl_720p);
         }
+      }
+      for (const note of course.notes) {
+        fs.unlinkSync(note);
       }
       await Course.findByIdAndDelete(courseId);
       res.json({
@@ -330,6 +347,7 @@ const teacherCtrl = {
     }
   },
   addlecture: async (req, res, next) => {
+    let videoFilePath, inputFilePath, inputFileName;
     try {
       const courseId = req.params.courseId;
 
@@ -344,12 +362,33 @@ const teacherCtrl = {
           new ErrorHandler(400, "You are not the creater of the course")
         );
       }
-      const du = await getVideoDurationInSeconds(
-        "public/course_videos" + "/" + req.file.filename
-      );
+      videoFilePath = "public/course_videos" + "/" + req.file.filename;
+      const conversionPromise = resolutions.map((resolution) => {
+        inputFilePath = videoFilePath;
+        inputFileName = path.basename(
+          inputFilePath,
+          path.extname(inputFilePath)
+        );
+        const outputPath = `public/course_videos/${inputFileName}-${
+          resolution.name
+        }${path.extname(inputFilePath)}`;
+        return createConversionWorker(resolution, inputFilePath, outputPath);
+      });
+      await Promise.all(conversionPromise);
+      console.log("Video conversion completed");
+      const du = await getVideoDurationInSeconds(videoFilePath);
       let video = new Video({
         videoTitle,
-        videoUrl: "public/course_videos" + "/" + req.file.filename,
+        videoUrl: videoFilePath,
+        videoUrl_144p: `public/course_videos/${inputFileName}-144p${path.extname(
+          inputFilePath
+        )}`,
+        videoUrl_360p: `public/course_videos/${inputFileName}-360p${path.extname(
+          inputFilePath
+        )}`,
+        videoUrl_720p: `public/course_videos/${inputFileName}-720p${path.extname(
+          inputFilePath
+        )}`,
         videoDuration: du,
       });
       video = await video.save();
@@ -389,6 +428,9 @@ const teacherCtrl = {
 
         await Video.findByIdAndDelete(lectureId);
         fs.unlinkSync(video.videoUrl);
+        fs.unlinkSync(video.videoUrl_144p);
+        fs.unlinkSync(video.videoUrl_360p);
+        fs.unlinkSync(video.videoUrl_720p);
       }
 
       res.json({
