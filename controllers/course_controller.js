@@ -130,7 +130,10 @@ const courseCtrl = {
       const page = parseInt(req.query.page);
       const pageSize = parseInt(req.query.pagesize);
       const startIndex = (page - 1) * pageSize;
-      const totalCourses = await Course.countDocuments({ category, isPublished: true });
+      const totalCourses = await Course.countDocuments({
+        category,
+        isPublished: true,
+      });
       // console.log(totalCourses)
       const totalPages = Math.ceil(totalCourses / pageSize);
 
@@ -139,6 +142,14 @@ const courseCtrl = {
           $match: {
             category,
             isPublished: true,
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "createdBy",
+            foreignField: "_id",
+            as: "createdBy",
           },
         },
         {
@@ -152,7 +163,7 @@ const courseCtrl = {
             createdAt: -1,
           },
         },
-      
+
         {
           $project: {
             _id: 1,
@@ -164,8 +175,7 @@ const courseCtrl = {
             category: 1,
             rating: 1,
             thumbnail: 1,
-          
-    
+            createdBy: { _id: 1, username: 1, name: 1 },
           },
         },
       ]);
@@ -179,7 +189,7 @@ const courseCtrl = {
         message: "List of all courses with selected category",
         data: {
           courses,
-          totalPages
+          totalPages,
         },
       });
       // redisClient.setEx(key, DEFAULT_EXPIRATION, JSON.stringify(courses));
@@ -418,7 +428,7 @@ const courseCtrl = {
   getWishlist: async (req, res, next) => {
     try {
       const user = await User.findById(req.user._id).populate("wishlist");
-   
+
       res.json({
         success: true,
         message: "wishlist of the user",
