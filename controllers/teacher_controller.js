@@ -158,6 +158,7 @@ const teacherCtrl = {
         message: "Video uploaded successfully",
       });
     } catch (e) {
+      fs.unlink()
       next(e);
     }
   },
