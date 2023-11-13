@@ -12,8 +12,44 @@ const initializedSocket = (server) => {
     console.log(
       `A socket connection to the server has been made: ${socket.id}`
     );
-    socket.on("joinCourseChat", (courseId) => {
+    socket.on("joinCourseChat", async (courseId) => {
       socket.join(courseId);
+      try {
+        const messageHistory = await Message.aggregate([
+          {
+            $match: {
+              courseId: courseId,
+            },
+          },
+          {
+            $sort: {
+              createdAt: -1,
+            },
+          },
+          {
+            $lookup: {
+              from: "users",
+              localField: "user",
+              foreignField: "_id",
+              as: "user",
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              text: 1,
+              createdAt: 1,
+              user: {
+                _id: 1,
+                username: 1,
+              },
+            },
+          },
+        ]);
+        socket.emit("messageHistory", messageHistory);
+      } catch (e) {
+        res.status(500).json({ message: e.message });
+      }
       socket.emit("chatMessage", {
         text: `Welcome to the chat for course ${courseId}`,
         sender: "System",
@@ -25,9 +61,13 @@ const initializedSocket = (server) => {
           text: message.text,
           user: message.user,
         });
-        await chatMessage.save();
+        try {
+          await chatMessage.save();
 
-        io.to(courseId).emit("chatMessage", chatMessage);
+          io.to(courseId).emit("chatMessage", chatMessage);
+        } catch (e) {
+          console.log(e);
+        }
       });
     });
   });

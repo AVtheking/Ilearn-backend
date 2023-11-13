@@ -108,6 +108,7 @@ const teacherCtrl = {
     }
   },
   uploadVideo_toCourse: async (req, res, next) => {
+    let noteFilePath, videoFilePath;
     try {
       const courseid = req.params.courseId;
 
@@ -116,7 +117,6 @@ const teacherCtrl = {
       const { videoTitle } = req.body;
       const result2 = await videoSchema.validateAsync({ videoTitle });
       const videotitle = result2.videoTitle;
-      // console.log(courseId);
 
       let course = await Course.findById(courseId);
       if (!course) {
@@ -134,18 +134,17 @@ const teacherCtrl = {
       const notesfile = req.files.notes;
       const videofile = req.files.video;
       console.log(notesfile);
-      // console.log(file);
 
+      noteFilePath = "public/course_notes" + "/" + notesfile[0].filename;
+      videoFilePath = "public/course_videos" + "/" + videofile[0].filename;
       console.log(notesfile[0].filename);
-      course.notes.push("public/course_notes" + "/" + notesfile[0].filename);
+      course.notes.push(noteFilePath);
 
-      const du = await getVideoDurationInSeconds(
-        "public/course_videos" + "/" + videofile[0].filename
-      );
+      const du = await getVideoDurationInSeconds(videoFilePath);
       console.log(du);
       let video = new Video({
         videoTitle: videotitle,
-        videoUrl: "public/course_videos" + "/" + videofile[0].filename,
+        videoUrl: videoFilePath,
         videoDuration: du,
       });
       video = await video.save();
@@ -158,7 +157,13 @@ const teacherCtrl = {
         message: "Video uploaded successfully",
       });
     } catch (e) {
-      fs.unlink()
+      if (noteFilePath) {
+        fs.unlinkSync(noteFilePath);
+      }
+      if (videoFilePath) {
+        fs.unlinkSync(videoFilePath);
+      }
+
       next(e);
     }
   },
@@ -192,11 +197,6 @@ const teacherCtrl = {
       course.duration = duration;
       await course.save();
 
-      // const course = await Course.findByIdAndUpdate(
-      //   courseId,
-      //   { isPublished: true, price },
-      //   { new: true }
-      // );
       let existingCategory = await Category.findOne({ name: categoryName });
       if (!existingCategory) {
         let newCategory = new Category({
@@ -244,8 +244,13 @@ const teacherCtrl = {
           new ErrorHandler(400, "You are not the creater of the course")
         );
       }
-      for (videos in course.videos) {
-        await Video.findByIdAndDelete(videos);
+      for (const videoId of course.videos) {
+        const video = await Video.findById(videoId);
+  
+        if (video) {
+          await Video.findByIdAndDelete(videoId);
+          fs.unlinkSync(video.videoUrl);
+        }
       }
       await Course.findByIdAndDelete(courseId);
       res.json({
@@ -308,9 +313,18 @@ const teacherCtrl = {
       if (videoIndex == -1) {
         return next(new ErrorHandler(400, "Lecture not found in the course"));
       }
-      course.videos.splice(videoIndex, 1);
-      await course.save();
-      await Video.findByIdAndDelete(lectureId);
+      // fs.unlinkSync(course.videos[videoIndex].videoUrl);
+      const video = await Video.findById(lectureId);
+
+      if (video) {
+        await course.videos.splice(videoIndex, 1);
+        await course.save();
+  
+        await Video.findByIdAndDelete(lectureId);
+        fs.unlinkSync(video.videoUrl);
+      }
+      // await course.save();
+      // await Video.findByIdAndDelete(lectureId);
       res.json({
         success: true,
         message: "Lecture removed successfully",
