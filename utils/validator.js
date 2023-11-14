@@ -77,6 +77,12 @@ const publishCourseSchema = Joi.object({
     )
     .required(),
 });
+const profileSchema = Joi.object({
+  name: Joi.string().required().trim(),
+  username: Joi.string().required().trim(),
+  domain: Joi.string().trim(),
+  bio: Joi.string().trim(),
+})
 module.exports = {
   authSchema,
   passwordSchema,
@@ -84,5 +90,6 @@ module.exports = {
   CourseSchema,
   videoSchema,
   courseIdSchema,
-  publishCourseSchema
+  publishCourseSchema,
+  profileSchema
 };

@@ -41,8 +41,16 @@ const userSchema = new mongoose.Schema({
   ],
   ownedCourse: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
+      courseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
+      completedVideo: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Video",
+        },
+      ],
     },
   ],
   cart: [
@@ -52,6 +60,12 @@ const userSchema = new mongoose.Schema({
     },
   ],
   wishlist: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
+  completedCourse: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
