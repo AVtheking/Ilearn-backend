@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User, Course } = require("../models");
 const { profileSchema, courseIdSchema } = require("../utils/validator");
 
 const userCtrl = {
@@ -128,7 +128,7 @@ const userCtrl = {
   },
   addToWishlist: async (req, res, next) => {
     try {
-      const courseid = req.param.courseId;
+      const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const course = await Course.findById(courseId);
@@ -154,7 +154,7 @@ const userCtrl = {
   },
   deleteCourseFromWishlist: async (req, res, next) => {
     try {
-      const courseid = req.param.courseId;
+      const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const user = req.user;
