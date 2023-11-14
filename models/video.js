@@ -9,6 +9,19 @@ const videoSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  videoUrl_144p: {
+    type: String,
+  },
+  videoUrl_360p: {
+    type: String,
+  },
+  videoUrl_720p: {
+    type: String,
+  },
+  videoDuration: {
+    type: Number,
+    required: true,
+  },
 });
 const Video = new mongoose.model("Video", videoSchema);
 module.exports = Video;

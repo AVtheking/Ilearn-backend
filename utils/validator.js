@@ -56,8 +56,26 @@ const videoSchema = Joi.object({
   videoTitle: Joi.string().required().trim(),
   // videoUrl: Joi.string().required(),
 });
-const paramSchema = Joi.object({
+const courseIdSchema = Joi.object({
   params: Joi.string().required(),
+});
+const publishCourseSchema = Joi.object({
+  price: Joi.string().required(),
+  duration: Joi.string().required(),
+  category: Joi.string()
+    .valid(
+      "Web Development",
+      "App Development",
+      "DSA",
+      "UI/UX",
+      "AI/ML",
+      "Data Science",
+      "AR/VR",
+      "Personality Development",
+      "Photography",
+      "Others"
+    )
+    .required(),
 });
 module.exports = {
   authSchema,
@@ -65,5 +83,6 @@ module.exports = {
   CategorySchema,
   CourseSchema,
   videoSchema,
-  paramSchema,
+  courseIdSchema,
+  publishCourseSchema
 };

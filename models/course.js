@@ -24,6 +24,12 @@ const courseSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
+    notes: [
+      {
+        type: String,
+      },
+    ],
+
     category: {
       type: String,
     },
@@ -35,32 +41,27 @@ const courseSchema = new mongoose.Schema(
       type: String,
       default: 0,
     },
-    rating: {
-      type: Number,
-      default: 4,
-      ratings: {
-        type: mongoose.Mixed,
-        1: 1,
-        2: 2,
-        3: 3,
-        4: 4,
-        5: 5,
-        //default: {1:1, 2:1, 3:1, 4:1, 5:1}}
-        default: 0,
-      },
+    ratings: {
+      type: mongoose.Mixed,
+      1: 1,
+      2: 2,
+      3: 3,
+      4: 4,
+      5: 5,
+      //default: {1:1, 2:1, 3:1, 4:1, 5:1}}
+      default: 0,
     },
-      totalStudents: {
-        type: Number,
-        default: 0,
-      },
-      isPublished: {
-        type: Boolean,
-        default: false,
-      },
-      popularity: {
-        type: Number,
-      }
-    
+    totalStudents: {
+      type: Number,
+      default: 0,
+    },
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
+    popularity: {
+      type: Number,
+    },
   },
   {
     timestamps: true,

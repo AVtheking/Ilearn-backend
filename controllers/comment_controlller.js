@@ -2,7 +2,7 @@ const Comment = require('../models/comment');
 
 const commentCtrl = {
      createComment :async (req, res, next) => {
-  try{       
+  try{
     const { text, user, courseId } = req.body;
      if (!text || !user || !courseId) {
    // return res.status(400).json({ error: 'Text, user, and course ID are required fields.' }); 

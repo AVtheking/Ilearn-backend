@@ -33,6 +33,7 @@ const auth = async (req, res, next) => {
         return next(new ErrorHandler(400, "Login again"));
       }
       req.user = user;
+      // console.log(user);
       next();
     });
   } catch (err) {
