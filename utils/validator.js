@@ -84,7 +84,9 @@ const profileSchema = Joi.object({
   bio: Joi.string().trim(),
 });
 const ratingSchema = Joi.object({
+  courseId: Joi.string().required(),
   rating: Joi.string().valid("1", "2", "3", "4", "5").required(),
+  comment: Joi.string().trim(),
 });
 const editReviewSchema = Joi.object({
   courseId: Joi.string().required(),

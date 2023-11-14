@@ -1,5 +1,5 @@
 const { Course, Category, User } = require("../models");
-const ErrorHandler = require("../middlewares/error");
+const { ErrorHandler } = require("../middlewares/error");
 // const redis = require("redis");
 const {
   courseIdSchema,
@@ -335,11 +335,11 @@ const courseCtrl = {
 
   rateCourse: async (req, res, next) => {
     try {
-      const { courseId, rating, comment } = req.body;
-      const result = await ratingSchema.validateAsync({
-        rating,
-      });
-      const userRating = result.rating;
+      // const { courseId, rating, comment } = req.body;
+      const result = await ratingSchema.validateAsync(req.body);
+      const { courseId, rating, comment } = result;
+      const userRating = rating;
+      console.log(userRating);
       const course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(404, "Course not found"));
@@ -407,7 +407,7 @@ const courseCtrl = {
   getReviews: async (req, res, next) => {
     try {
       const params = req.params.courseId;
-      const result = await paramSchema.validateAsync({ params });
+      const result = await courseIdSchema.validateAsync({ params });
       const courseId = result.params;
       const course = await Course.findById(courseId);
       if (!course) {
@@ -445,7 +445,7 @@ const courseCtrl = {
           new ErrorHandler(400, "You are not the owner of the review")
         );
       }
-      course.reviews[reviewIndex].comment = comment;
+      course.reviews[reviewIndex].comment = review;
       await course.save();
       res.json({
         success: true,
@@ -479,9 +479,28 @@ const courseCtrl = {
           new ErrorHandler(400, "You are not the owner of the review")
         );
       }
+      console.log(reviewIndex);
+
       const review = course.reviews[reviewIndex];
+    
       course.ratings.set(review.rating, course.ratings.get(review.rating) - 1);
       course.reviews.splice(reviewIndex, 1);
+
+      //recalculating weighted rating here
+      let totalWeightedRating = 0;
+      let totalStudents = 0;
+      for (const [rating, count] of course.ratings.entries()) {
+        totalWeightedRating += rating * count;
+        totalStudents += count;
+      }
+      const weightedRating = totalWeightedRating / totalStudents;
+      if (weightedRating) {
+        course.rating = weightedRating;
+      }
+      else {
+        course.rating = 4;
+      }
+      await course.save();
       res.json({
         success: true,
         message: "Review deleted successfully",

@@ -45,7 +45,7 @@ const courseSchema = new mongoose.Schema(
     },
     rating: {
       type: Number,
-
+      default: 4,
     },
     ratings: {
       type: Map,

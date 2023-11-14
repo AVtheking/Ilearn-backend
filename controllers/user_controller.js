@@ -5,7 +5,7 @@ const userCtrl = {
   uploadProfilePicture: async (req, res, next) => {
     try {
       const user = await User.findById(req.user._id);
-      user.profileimg = `public/thumbnail` + req.file.filename;
+      user.profileimg = `public/thumbnail` + "/" + req.file.filename;
       await user.save();
       res.json({
         success: true,
@@ -23,7 +23,7 @@ const userCtrl = {
       const result = await profileSchema.validateAsync(req.body);
       const { name, username, domain, bio } = result;
       const user = await User.findOne({ username });
-      if (user) {
+      if (user && user.id != req.user._id) {
         return res.status(400).json({ message: "Username already taken" });
       }
       await User.findByIdAndUpdate(req.user._id, {
@@ -32,7 +32,16 @@ const userCtrl = {
         domain,
         bio,
       });
-      return;
+      res.json({
+        success: true,
+        message: "Profile updated successfully",
+        data: {
+          name,
+          username,
+          domain,
+          bio,
+        },
+      });
     } catch (e) {
       next(e);
     }
@@ -43,6 +52,13 @@ const userCtrl = {
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const user = req.user;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "No course found"));
+      }
+      if (!course.isPublished) {
+        return next(new ErrorHandler(400, "Course is not published yet"));
+      }
       user.cart.push(courseId);
       await user.save();
       res.json({
@@ -115,6 +131,13 @@ const userCtrl = {
       const courseid = req.param.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "No course found"));
+      }
+      if (!course.isPublished) {
+        return next(new ErrorHandler(400, "Course is not published yet"));
+      }
       const user = req.user;
       user.wishlist.push(courseId);
       await user.save();
@@ -190,24 +213,25 @@ const userCtrl = {
     } catch (e) {
       next(e);
     }
-    },
-    getCompletedCourse: async (req, res, next) => {
-        try {
-            const user = req.user;
-            const completedCourse = await User.findById(user._id).populate({
-                path: "completedCourse",
-                select: "_id title description thumbnail category price rating duration",
-            });
-            res.json({
-                success: true,
-                message: "completed courses",
-                data: {
-                    completedCourse
-                }
-            })
-        } catch (e) {
-            next(e)
-      }
-  }
+  },
+  getCompletedCourse: async (req, res, next) => {
+    try {
+      //   const user = req.user;
+      const user = await User.findById(req.user._id).populate({
+        path: "completedCourse",
+        select:
+          "_id title description thumbnail category price rating duration",
+      });
+      res.json({
+        success: true,
+        message: "completed courses",
+        data: {
+          completedCourse: user.completedCourse,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
 };
 module.exports = userCtrl;

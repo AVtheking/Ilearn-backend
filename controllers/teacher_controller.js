@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 const {
-  CategorySchema,
+
   CourseSchema,
   videoSchema,
   courseIdSchema,

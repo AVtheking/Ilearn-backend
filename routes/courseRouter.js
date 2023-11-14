@@ -9,7 +9,7 @@ courseRouter.get("/getCourseById/:courseId", auth, courseCtrl.getCourseByid);
 courseRouter.get("/video/:courseId/lecture/:lectureId", auth, videoCtrl.streamVideo);
 courseRouter.get("/getCategoriesName", auth, courseCtrl.getCategoriesName);
 courseRouter.get("/getCategoriesData", auth, courseCtrl.getCategoriesData);
-courseRouter.get("/get-Reviews/:courseId", auth, courseCtrl.getReviews);
+courseRouter.get("/get-reviews/:courseId", auth, courseCtrl.getReviews);
 
 courseRouter.get("/search-course", courseCtrl.searchCourses);
 courseRouter.get("/get-popular-course", courseCtrl.getPopularCourses);
