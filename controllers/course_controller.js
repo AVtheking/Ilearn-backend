@@ -280,22 +280,6 @@ const courseCtrl = {
       next(e);
     }
   },
-  addCourseToCart: async (req, res, next) => {
-    try {
-      const courseid = req.params.courseId;
-      const result = await courseIdSchema.validateAsync({ params: courseid });
-      const courseId = result.params;
-      const user = req.user;
-      user.cart.push(courseId);
-      await user.save();
-      res.json({
-        success: true,
-        message: "Course added to cart successfully",
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
 
   searchCourses: async (req, res, next) => {
     try {
@@ -349,13 +333,14 @@ const courseCtrl = {
       next(e);
     }
   },
- 
- 
 
   rateCourse: async (req, res, next) => {
     try {
-      const { courseId, rating, weight } = req.body;
-
+      const { courseId, rating, comment } = req.body;
+      const result = await ratingSchema.validateAsync({
+        rating,
+      });
+      const userRating = result.rating;
       const course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(404, "Course not found"));
@@ -382,15 +367,16 @@ const courseCtrl = {
         totalWeightedRating += rating * count;
         totalStudents += count;
       }
-
-      const weightedAverageRating = totalWeightedRating / totalWeight;
-
-      course.popularity = calculatePopularity(
-        weightedAverageRating,
-        course.ratings.length
-      );
-
-      course.averageRating = weightedAverageRating;
+      const weightedRating = totalWeightedRating / totalStudents;
+      course.rating = weightedRating;
+      // await course.save();
+      const review = {
+        user: req.user._id,
+        rating: userRating,
+        comment,
+      };
+      // await review.save()
+      course.reviews.push(review);
       await course.save();
 
       res.json({
@@ -422,7 +408,7 @@ const courseCtrl = {
   getReviews: async (req, res, next) => {
     try {
       const params = req.params.courseId;
-      const result = await courseIdSchema.validateAsync({ params });
+      const result = await paramSchema.validateAsync({ params });
       const courseId = result.params;
       const course = await Course.findById(courseId);
       if (!course) {
@@ -460,7 +446,7 @@ const courseCtrl = {
           new ErrorHandler(400, "You are not the owner of the review")
         );
       }
-      course.reviews[reviewIndex].comment = review;
+      course.reviews[reviewIndex].comment = comment;
       await course.save();
       res.json({
         success: true,
@@ -494,28 +480,9 @@ const courseCtrl = {
           new ErrorHandler(400, "You are not the owner of the review")
         );
       }
-      console.log(reviewIndex);
-
       const review = course.reviews[reviewIndex];
-    
       course.ratings.set(review.rating, course.ratings.get(review.rating) - 1);
       course.reviews.splice(reviewIndex, 1);
-
-      //recalculating weighted rating here
-      let totalWeightedRating = 0;
-      let totalStudents = 0;
-      for (const [rating, count] of course.ratings.entries()) {
-        totalWeightedRating += rating * count;
-        totalStudents += count;
-      }
-      const weightedRating = totalWeightedRating / totalStudents;
-      if (weightedRating) {
-        course.rating = weightedRating;
-      }
-      else {
-        course.rating = 4;
-      }
-      await course.save();
       res.json({
         success: true,
         message: "Review deleted successfully",
