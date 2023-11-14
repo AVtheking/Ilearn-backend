@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+
+const reviewSchema = require("./review");
 const courseSchema = new mongoose.Schema(
   {
     title: {
@@ -41,15 +43,20 @@ const courseSchema = new mongoose.Schema(
       type: String,
       default: 0,
     },
+    rating: {
+      type: Number,
+      default: 4,
+    },
     ratings: {
-      type: mongoose.Mixed,
-      1: 1,
-      2: 2,
-      3: 3,
-      4: 4,
-      5: 5,
-      //default: {1:1, 2:1, 3:1, 4:1, 5:1}}
-      default: 0,
+      type: Map,
+      of: Number,
+      default: {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+      },
     },
     totalStudents: {
       type: Number,
@@ -59,9 +66,7 @@ const courseSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    popularity: {
-      type: Number,
-    },
+    reviews: [reviewSchema],
   },
   {
     timestamps: true,

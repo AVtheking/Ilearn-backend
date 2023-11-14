@@ -77,6 +77,27 @@ const publishCourseSchema = Joi.object({
     )
     .required(),
 });
+const profileSchema = Joi.object({
+  name: Joi.string().required().trim(),
+  username: Joi.string().required().trim(),
+  domain: Joi.string().trim(),
+  bio: Joi.string().trim(),
+});
+const ratingSchema = Joi.object({
+  courseId: Joi.string().required(),
+  rating: Joi.string().valid("1", "2", "3", "4", "5").required(),
+  comment: Joi.string().trim(),
+});
+const editReviewSchema = Joi.object({
+  courseId: Joi.string().required(),
+  reviewId: Joi.string().required(),
+  review: Joi.string().required(),
+});
+const deleteReviewSchema = Joi.object({
+  courseId: Joi.string().required(),
+  reviewId: Joi.string().required(),
+});
+
 module.exports = {
   authSchema,
   passwordSchema,
@@ -84,5 +105,9 @@ module.exports = {
   CourseSchema,
   videoSchema,
   courseIdSchema,
-  publishCourseSchema
+  publishCourseSchema,
+  profileSchema,
+  ratingSchema,
+  editReviewSchema,
+  deleteReviewSchema,
 };

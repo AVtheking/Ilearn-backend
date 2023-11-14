@@ -9,6 +9,7 @@ const {
   teacherRouter,
   courseRouter,
   commentRouter,
+  userRouter,
 } = require("./routes");
 
 require("dotenv").config();
@@ -39,6 +40,7 @@ app.use(errorMiddleware);
 app.use(authRouter, errorMiddleware);
 app.use(teacherRouter, errorMiddleware);
 app.use(courseRouter, errorMiddleware);
+app.use(userRouter,errorMiddleware)
 
 app.use(commentRouter, errorMiddleware);
 

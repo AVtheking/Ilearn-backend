@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 const {
-  CategorySchema,
+
   CourseSchema,
   videoSchema,
   courseIdSchema,
@@ -261,7 +261,7 @@ const teacherCtrl = {
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-     
+
       const result2 = await publishCourseSchema.validateAsync(req.body);
       const { price, duration, category } = result2;
       let course = await Course.findById(courseId);
@@ -314,6 +314,12 @@ const teacherCtrl = {
 
       const result2 = await CourseSchema.validateAsync(req.body);
       const { title, description, category } = result2;
+      let existingtitle = await Course.findOne({ title });
+      if (existingtitle) {
+        return next(
+          new ErrorHandler(400, "Please select different course title")
+        );
+      }
       await Course.findByIdAndUpdate(courseId, {
         title,
         description,
