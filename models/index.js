@@ -4,5 +4,5 @@ module.exports.Course = require("./course");
 module.exports.Video = require("./video");
 module.exports.Category = require("./category");
 module.exports.Message = require("./message");
-// module.exports.Cart = require("./cart"); 
+module.exports.Review = require("./review");
 module.exports.Comment = require("./comment");

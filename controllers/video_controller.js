@@ -1,6 +1,7 @@
 const { ErrorHandler } = require("../middlewares/error");
 const fs = require("fs");
 const { Course } = require("../models");
+const { courseIdSchema } = require("../utils/validator");
 
 const videoCtrl = {
   streamVideo: async (req, res, next) => {
