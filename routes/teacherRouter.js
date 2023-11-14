@@ -12,9 +12,10 @@ teacherRouter.patch("/update-course/:courseId", auth, uploadImage, teacherCtrl.u
 teacherRouter.post("/create-course", auth,uploadImage, teacherCtrl.createCourse);
 teacherRouter.post("/upload-video/:courseId", auth, uploadNotes.fields([{name:"video"},{name:"notes"}]), teacherCtrl.uploadVideo_toCourse);
 teacherRouter.post("/publish-course/:courseId", auth, teacherCtrl.publishCourse);
-teacherRouter.post("/add-category", auth, teacherCtrl.addCategory)
+// teacherRouter.post("/add-category", auth, teacherCtrl.addCategory)
 
 teacherRouter.get('/search-teacher', teacherCtrl.searchTeacher);
+teacherRouter.get("/created-course", auth, teacherCtrl.getCreatedCourses);
 
 teacherRouter.delete("/remove-lecture/:courseId/lecture/:lectureId",auth,teacherCtrl.removeLecture)
 teacherRouter.delete("/delete-course/:courseId", auth, teacherCtrl.deleteCourse)

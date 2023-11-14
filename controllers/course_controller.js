@@ -103,7 +103,8 @@ const courseCtrl = {
         })
         .populate({
           path: "videos",
-          select: "_id videoTitle videoUrl videoDuration",
+          select:
+            "_id videoTitle videoUrl videoDuration videoUrl_144p videoUrl_360p videoUrl_720p",
         });
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
@@ -367,7 +368,15 @@ const courseCtrl = {
             category: 1,
             rating: 1,
             thumbnail: 1,
-            videos: { _id: 1, videoTitle: 1, videoUrl: 1 },
+            videos: {
+              _id: 1,
+              videoTitle: 1,
+              videoUrl: 1,
+              videoDuration: 1,
+              videoUrl_144p: 1,
+              videoUrl_360p: 1,
+              videoUrl_720p: 1,
+            },
             createdBy: { _id: 1, username: 1, name: 1 },
           },
         },
@@ -413,7 +422,11 @@ const courseCtrl = {
   },
   getCoursesInCart: async (req, res, next) => {
     try {
-      const user = await User.findById(req.user._id).populate("cart");
+      const user = await User.findById(req.user._id).populate({
+        path: "cart",
+        select:
+          "_id title description thumbnail category price rating duration ",
+      });
       res.json({
         success: true,
         message: "Courses in the cart ",
