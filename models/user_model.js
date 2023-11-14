@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  domain: {
+    type: String,
+  },
+  bio: {
+    type: String,
+  },
   role: {
     type: String,
     default: "user",

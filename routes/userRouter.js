@@ -17,3 +17,5 @@ userRouter.delete("/delete-wishlist", auth, userCtrl.deleteCourseFromWishlist);
 
 userRouter.patch('/update-profileImg', auth, uploadImage, userCtrl.uploadProfilePicture);
 userRouter.patch('/update-profile', auth, userCtrl.updateProfile);
+
+module.exports = userRouter;
