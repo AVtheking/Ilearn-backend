@@ -205,12 +205,13 @@ const teacherCtrl = {
     }
   },
 
-  searchTeacher: async (req, res, next) => {
+  searchTeacher: async (req, res, next) => {  //fuzzy search
     try {
       const searchteacher = req.query.q;
 
       if (!searchteacher) {
-        return res.status(400).json({ error: 'Teacher name is required.' });
+       // return res.status(400).json({ error: 'Teacher name is required.' });
+       return next(new ErrorHandler(400, "Teacher name is required."));
       }
   
       const teacher = await teacher.find({

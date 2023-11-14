@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); //remove it 
 
 const enrollmentSchema = new mongoose.Schema({
   courseId: {

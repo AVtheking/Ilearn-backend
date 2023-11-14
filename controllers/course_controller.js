@@ -186,6 +186,7 @@ const courseCtrl = {
       next(e)
     }
   },
+  //fuzzy seaarch
         searchCourses: async (req, res, next) => {
           try {
             const query = req.query.coursetitle;
@@ -197,7 +198,7 @@ const courseCtrl = {
               ],
             });
   
-            res.render('course-search', { courses });
+           // res.render('course-search', { courses });
           } catch (error) {
             //res.status(500).json({ error: 'Error searching for courses.' });
             next(error);
@@ -218,7 +219,8 @@ const courseCtrl = {
             await newEnrollment.save();
 
             res.json({
-              message: 'Enrollment successful'
+              success:true,
+              message: 'Enrollment successfull'
             });
      
           } catch (err) {
@@ -278,10 +280,10 @@ const courseCtrl = {
             ]);
 
             if (!popularCourses || popularCourses.length === 0) {
-              // return next(
-              //   new ErrorHandler (400, "No popular courses are available.")
-              // );
-              res.status(400).json("do not have any ")
+               return next(
+                 new ErrorHandler (400, "No popular courses are available.")
+               );
+              //res.status(400).json("do not have any ")
             }
 
             res.json({
@@ -382,7 +384,7 @@ const courseCtrl = {
         },
 
 
-        rateCourse: async (req, res, next) => {
+          rateCourse: async (req, res, next) => {
 
           try {
             const { courseId, rating, weight } = req.body;
@@ -390,7 +392,9 @@ const courseCtrl = {
             const course = await Course.findById(courseId);
     
             if (!course) {
-              return res.status(404).json({ message: 'Course not found' });
+              //return res.status(404).json({ message: 'Course not found' });
+              return next(new ErrorHandler(404, "Course not found"));
+      
             }
     
             course.ratings.push({
@@ -414,7 +418,9 @@ const courseCtrl = {
             course.averageRating = weightedAverageRating;
             await course.save();
     
-            res.json({ message: 'Rating submitted successfully' });
+            res.json({
+              success:true,
+              message: 'Rating submitted successfully' });
           } catch (error) {
             next(error);
           }
