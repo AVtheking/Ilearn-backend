@@ -1,7 +1,12 @@
-onst { Course, Category, User } = require("../models");
-const ErrorHandler = require("../middlewares/error");
+const { Course, Category, User } = require("../models");
+const { ErrorHandler } = require("../middlewares/error");
 // const redis = require("redis");
-const { courseIdSchema } = require("../utils/validator");
+const {
+  courseIdSchema,
+  ratingSchema,
+  editReviewSchema,
+  deleteReviewSchema,
+} = require("../utils/validator");
 //const Enrollment = require('../models/Enrollment');
 
 // const redisClient = redis.createClient();
@@ -291,31 +296,6 @@ const courseCtrl = {
       next(e);
     }
   },
-<<<<<<< HEAD
-  //fuzzy seaarch
-        searchCourses: async (req, res, next) => {
-          try {
-            const query = req.query.coursetitle;
-
-            const courses = await Course.find({
-              $or: [
-                { title: { $regex: query, $options: 'i' } },
-                { description: { $regex: query, $options: 'i' } },
-              ],
-            });
-  
-           // res.render('course-search', { courses });
-          } catch (error) {
-            //res.status(500).json({ error: 'Error searching for courses.' });
-            next(error);
-          }
-        },
- 
-        enrollCourse: async (req, res, next) => {
-          try {
-            const courseId = req.params.courseId;
-            const userId = req.user.id;
-=======
 
   searchCourses: async (req, res, next) => {
     try {
@@ -325,231 +305,18 @@ const courseCtrl = {
       next(error);
     }
   },
->>>>>>> e9ff95991588dc559975cafd52da447554db9263
+
 
   enrollCourse: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
       const userId = req.user.id;
 
-<<<<<<< HEAD
-            const newEnrollment = new Enrollment({ courseId, userId });
-            await newEnrollment.save();
-
-            res.json({
-              success:true,
-              message: 'Enrollment successfull'
-            });
-     
-          } catch (err) {
-            next(err);
-          }
-        },
-        getPopularCourses: async (req, res, next) => {
-          try {
-
-            // const popularCourses = await Course.find({ isPopular: true })
-            //     .sort("-createdAt")
-            //     .populate("videos", "_id videoTitle videoUrl")
-            //     .populate("createdBy", "_id username name");
-            const popularCourses = await Course.aggregate([
-              {
-                $match: {
-                  isPopular: true,
-                  isPublished: true,
-                },
-              },
-              {
-                $sort: {
-                  createdAt: -1,
-                },
-              },
-              {
-                $lookup: {
-                  from: "Video",
-                  localField: "videos",
-                  foreignField: "_id",
-                  as: "videos",
-                },
-              },
-              {
-                $lookup: {
-                  from: "User",
-                  localField: "createdBy",
-                  foreignField: "_id",
-                  as: "createdBy",
-                },
-              },
-              {
-                $project: {
-                  _id: 1,
-                  title: 1,
-                  description: 1,
-                  price: 1,
-                  duration: 1,
-                  totalStudents: 1,
-                  category: 1,
-                  rating: 1,
-                  thumbnail: 1,
-                  videos: { _id: 1, videoTitle: 1, videoUrl: 1 },
-                  createdBy: { _id: 1, username: 1, name: 1 },
-                },
-              },
-            ]);
-
-            if (!popularCourses || popularCourses.length === 0) {
-               return next(
-                 new ErrorHandler (400, "No popular courses are available.")
-               );
-              //res.status(400).json("do not have any ")
-            }
-
-            res.json({
-              success: true,
-              message: "List of popular courses",
-              data: {
-                courses: popularCourses,
-              },
-            });
-          } catch (e) {
-            next(e);
-          }
-        },
-        deleteCourseFromCart: async (req, res, next) => {
-          try {
-            const courseid = req.param.courseId;
-            const result = await paramSchema.validateAsync({ params: courseid });
-            const courseId = result.params;
-            const user = await User.findById(courseId);
-            const courseIndex = user.cart.indexOf(courseId);
-            if (courseIndex == -1) {
-              return next(new ErrorHandler(400, "No course found"));
-            }
-            user.cart.splice(courseIndex, 1);
-            await user.save();
-            res.json({
-              success: true,
-              message: "Course removed from cart successfully",
-            });
-          } catch (e) {
-            next(e);
-          }
-        },
-        getCoursesInCart: async (req, res, next) => {
-          try {
-            const user = await User.findById(req.user).populate("cart");
-            res.json({
-              success: true,
-              message: "Courses in the cart ",
-              data: {
-                courses: user.cart,
-              },
-            });
-          } catch (e) {
-            next(e);
-          }
-        },
-        getWishlist: async (req, res, next) => {
-          try {
-            const user = await User.findById(req.user).populate("wishlist");
-            user.wishlist.push(courseId);
-            await user.save();
-            res.json({
-              success: true,
-              message: "wishlist of the user",
-              data: {
-                wishlist: user.wishlist,
-              },
-            });
-          } catch (e) {
-            next(e);
-          }
-        },
-        addToWishlist: async (req, res, next) => {
-          try {
-            const courseid = req.param.courseId;
-            const result = await paramSchema.validateAsync({ params: courseid });
-            const courseId = result.params;
-            const user = await User.findById(req.user);
-            user.wishlist.push(courseId);
-            await user.save();
-            res.json({
-              success: true,
-              message: "course added to wishlist",
-              data: {
-                wishlist: user.wishlist,
-              },
-            });
-          } catch (e) {
-            next(e);
-          }
-        },
-        deleteCourseFromWishlist: async (req, res, next) => {
-          const courseid = req.param.courseId;
-          const result = await paramSchema.validateAsync({ params: courseid });
-          const courseId = result.params;
-          const user = await user.findById(req.user);
-          const courseIndex = user.wishlist.indexOf(courseId);
-          if (courseIndex == -1) {
-            return next(new ErrorHandler(400, "No course found"));
-          }
-          user.wishlist.splice(courseIndex, 1);
-          await user.save();
-          res.json({
-            success: true,
-            message: "Course deleted from wishlist successfully",
-          });
-        },
-
-
-          rateCourse: async (req, res, next) => {
-
-          try {
-            const { courseId, rating, weight } = req.body;
-    
-            const course = await Course.findById(courseId);
-    
-            if (!course) {
-              //return res.status(404).json({ message: 'Course not found' });
-              return next(new ErrorHandler(404, "Course not found"));
-      
-            }
-    
-            course.ratings.push({
-              rating, weight
-            });
-    
-            await course.save();
-    
-            let totalWeightedRating = 0;
-            let totalWeight = 0;
-    
-            for (const r of course.ratings) {
-              totalWeightedRating += r.rating * r.weight;
-              totalWeight += r.weight;
-            }
-    
-            const weightedAverageRating = totalWeightedRating / totalWeight;
-
-            course.popularity = calculatePopularity(weightedAverageRating, course.ratings.length);
-    
-            course.averageRating = weightedAverageRating;
-            await course.save();
-    
-            res.json({
-              success:true,
-              message: 'Rating submitted successfully' });
-          } catch (error) {
-            next(error);
-          }
-        },
-=======
       const existingEnrollment = await Enrollment.findOne({ courseId, userId });
       if (existingEnrollment) {
         return next(
           new ErrorHandler(400, "You are already enrolled in this course.")
         );
->>>>>>> e9ff95991588dc559975cafd52da447554db9263
       }
 
       const newEnrollment = new Enrollment({ courseId, userId });
@@ -564,69 +331,12 @@ const courseCtrl = {
   },
   getPopularCourses: async (req, res, next) => {
     try {
-      // const popularCourses = await Course.find({ isPopular: true })
-      //     .sort("-createdAt")
-      //     .populate("videos", "_id videoTitle videoUrl")
-      //     .populate("createdBy", "_id username name");
-      const popularCourses = await Course.aggregate([
-        {
-          $match: {
-            isPopular: true, //there is no field like this
-            isPublished: true,
-          },
-        },
-        {
-          $sort: {
-            createdAt: -1,
-          },
-        },
-        {
-          $lookup: {
-            from: "Video",
-            localField: "videos",
-            foreignField: "_id",
-            as: "videos",
-          },
-        },
-        {
-          $lookup: {
-            from: "User",
-            localField: "createdBy",
-            foreignField: "_id",
-            as: "createdBy",
-          },
-        },
-        {
-          $project: {
-            _id: 1,
-            title: 1,
-            description: 1,
-            price: 1,
-            duration: 1,
-            totalStudents: 1,
-            category: 1,
-            rating: 1,
-            thumbnail: 1,
-            videos: {
-              _id: 1,
-              videoTitle: 1,
-              videoUrl: 1,
-              videoDuration: 1,
-              videoUrl_144p: 1,
-              videoUrl_360p: 1,
-              videoUrl_720p: 1,
-            },
-            createdBy: { _id: 1, username: 1, name: 1 },
-          },
-        },
-      ]);
-
-      if (!popularCourses || popularCourses.length === 0) {
-        // return next(
-        //   new ErrorHandler (400, "No popular courses are available.")
-        // );
-        res.status(400).json("do not have any ");
-      }
+      const popularCourses = await Course.find({
+        rating: { $gt: 4.2 },
+        isPublished: true,
+      })
+        .sort({ rating: -1 })
+        .limit(10);
 
       res.json({
         success: true,
@@ -639,122 +349,38 @@ const courseCtrl = {
       next(e);
     }
   },
-  deleteCourseFromCart: async (req, res, next) => {
-    try {
-      const courseid = req.param.courseId;
-      const result = await courseIdSchema.validateAsync({ params: courseid });
-      const courseId = result.params;
-      const user = await User.findById(courseId);
-      const courseIndex = user.cart.indexOf(courseId);
-      if (courseIndex == -1) {
-        return next(new ErrorHandler(400, "No course found"));
-      }
-      user.cart.splice(courseIndex, 1);
-      await user.save();
-      res.json({
-        success: true,
-        message: "Course removed from cart successfully",
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  getCoursesInCart: async (req, res, next) => {
-    try {
-      const user = await User.findById(req.user._id).populate({
-        path: "cart",
-        select:
-          "_id title description thumbnail category price rating duration ",
-      });
-      res.json({
-        success: true,
-        message: "Courses in the cart ",
-        data: {
-          courses: user.cart,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  getWishlist: async (req, res, next) => {
-    try {
-      const user = await User.findById(req.user._id).populate("wishlist");
-
-      res.json({
-        success: true,
-        message: "wishlist of the user",
-        data: {
-          wishlist: user.wishlist,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  addToWishlist: async (req, res, next) => {
-    try {
-      const courseid = req.param.courseId;
-      const result = await courseIdSchema.validateAsync({ params: courseid });
-      const courseId = result.params;
-      const user = await User.findById(req.user._id);
-      user.wishlist.push(courseId);
-      await user.save();
-      res.json({
-        success: true,
-        message: "course added to wishlist",
-        data: {
-          wishlist: user.wishlist,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  deleteCourseFromWishlist: async (req, res, next) => {
-    try {
-      const courseid = req.param.courseId;
-      const result = await courseIdSchema.validateAsync({ params: courseid });
-      const courseId = result.params;
-      const user = await user.findById(req.user);
-      const courseIndex = user.wishlist.indexOf(courseId);
-      if (courseIndex == -1) {
-        return next(new ErrorHandler(400, "No course found"));
-      }
-      user.wishlist.splice(courseIndex, 1);
-      await user.save();
-      res.json({
-        success: true,
-        message: "Course deleted from wishlist successfully",
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
+ 
+ 
 
   rateCourse: async (req, res, next) => {
     try {
       const { courseId, rating, weight } = req.body;
 
       const course = await Course.findById(courseId);
-
       if (!course) {
-        return res.status(404).json({ message: "Course not found" });
+        return next(new ErrorHandler(404, "Course not found"));
+      }
+      if (!course.isPublished) {
+        return next(new ErrorHandler(400, "Course is not published yet"));
       }
 
-      course.ratings.push({
-        rating,
-        weight,
-      });
-
-      await course.save();
-
+      const reviewIndex = course.reviews.findIndex((review) =>
+        review.user.equals(req.user._id)
+      );
+      if (reviewIndex != -1) {
+        const review = course.reviews[reviewIndex];
+        course.ratings.set(
+          review.rating,
+          course.ratings.get(review.rating) - 1
+        );
+        course.reviews.splice(reviewIndex, 1);
+      }
+      course.ratings.set(userRating, course.ratings.get(userRating) + 1);
       let totalWeightedRating = 0;
-      let totalWeight = 0;
-
-      for (const r of course.ratings) {
-        totalWeightedRating += r.rating * r.weight;
-        totalWeight += r.weight;
+      let totalStudents = 0;
+      for (const [rating, count] of course.ratings.entries()) {
+        totalWeightedRating += rating * count;
+        totalStudents += count;
       }
 
       const weightedAverageRating = totalWeightedRating / totalWeight;
@@ -767,11 +393,15 @@ const courseCtrl = {
       course.averageRating = weightedAverageRating;
       await course.save();
 
-      res.json({ message: "Rating submitted successfully" });
+      res.json({
+        success: true,
+        message: "Course rated successfully",
+      });
     } catch (error) {
       next(error);
     }
   },
+
   downloadNotes: async (req, res, next) => {
     try {
       const courseid = req.params.courseId;
@@ -785,6 +415,111 @@ const courseCtrl = {
       }
 
       res.download(path, notesIndex + "-" + "notes.pdf");
+    } catch (e) {
+      next(e);
+    }
+  },
+  getReviews: async (req, res, next) => {
+    try {
+      const params = req.params.courseId;
+      const result = await courseIdSchema.validateAsync({ params });
+      const courseId = result.params;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(404, "Course not found"));
+      }
+      res.json({
+        success: true,
+        message: "List of reviews",
+        data: {
+          reviews: course.reviews,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  editReview: async (req, res, next) => {
+    try {
+      // const { courseId, reviewId, review } = req.body;
+      const result = await editReviewSchema.validateAsync(req.body);
+      const { courseId, reviewId, review } = result;
+      const user = req.user;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(404, "Course not found"));
+      }
+      const reviewIndex = course.reviews.findIndex((review) =>
+        review._id.equals(reviewId)
+      );
+      if (reviewIndex == -1) {
+        return next(new ErrorHandler(404, "Review not found"));
+      }
+      if (!course.reviews[reviewIndex].user.equals(user._id)) {
+        return next(
+          new ErrorHandler(400, "You are not the owner of the review")
+        );
+      }
+      course.reviews[reviewIndex].comment = review;
+      await course.save();
+      res.json({
+        success: true,
+        message: "Review changed successfully",
+        data: {
+          review: course.reviews[reviewIndex],
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  deleteReview: async (req, res, next) => {
+    try {
+      // const { courseId, reviewId } = req.body;
+      const result = await deleteReviewSchema.validateAsync(req.body);
+      const { courseId, reviewId } = result;
+      const user = req.user;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(404, "Course not found"));
+      }
+      const reviewIndex = course.reviews.findIndex((review) =>
+        review._id.equals(reviewId)
+      );
+      if (reviewIndex == -1) {
+        return next(new ErrorHandler(404, "Review not found"));
+      }
+      if (!course.reviews[reviewIndex].user.equals(user._id)) {
+        return next(
+          new ErrorHandler(400, "You are not the owner of the review")
+        );
+      }
+      console.log(reviewIndex);
+
+      const review = course.reviews[reviewIndex];
+    
+      course.ratings.set(review.rating, course.ratings.get(review.rating) - 1);
+      course.reviews.splice(reviewIndex, 1);
+
+      //recalculating weighted rating here
+      let totalWeightedRating = 0;
+      let totalStudents = 0;
+      for (const [rating, count] of course.ratings.entries()) {
+        totalWeightedRating += rating * count;
+        totalStudents += count;
+      }
+      const weightedRating = totalWeightedRating / totalStudents;
+      if (weightedRating) {
+        course.rating = weightedRating;
+      }
+      else {
+        course.rating = 4;
+      }
+      await course.save();
+      res.json({
+        success: true,
+        message: "Review deleted successfully",
+      });
     } catch (e) {
       next(e);
     }

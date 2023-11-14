@@ -261,7 +261,7 @@ const teacherCtrl = {
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
-     
+
       const result2 = await publishCourseSchema.validateAsync(req.body);
       const { price, duration, category } = result2;
       let course = await Course.findById(courseId);
@@ -314,6 +314,12 @@ const teacherCtrl = {
 
       const result2 = await CourseSchema.validateAsync(req.body);
       const { title, description, category } = result2;
+      let existingtitle = await Course.findOne({ title });
+      if (existingtitle) {
+        return next(
+          new ErrorHandler(400, "Please select different course title")
+        );
+      }
       await Course.findByIdAndUpdate(courseId, {
         title,
         description,
@@ -489,22 +495,12 @@ const teacherCtrl = {
       next(e);
     }
   },
-<<<<<<< HEAD
-
-  searchTeacher: async (req, res, next) => {  //fuzzy search
-=======
   searchTeacher: async (req, res, next) => {
->>>>>>> e9ff95991588dc559975cafd52da447554db9263
     try {
       const searchteacher = req.query.q;
 
       if (!searchteacher) {
-<<<<<<< HEAD
-       // return res.status(400).json({ error: 'Teacher name is required.' });
-       return next(new ErrorHandler(400, "Teacher name is required."));
-=======
         return res.status(400).json({ error: "Teacher name is required." });
->>>>>>> e9ff95991588dc559975cafd52da447554db9263
       }
 
       const teacher = await teacher.find({
