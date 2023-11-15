@@ -15,7 +15,7 @@ const {
 // const DEFAULT_EXPIRATION = 3600;
 const courseCtrl = {
   getCourses: async (req, res, next) => {
-    const key = req.originalUrl;
+    const key = req.coriginalUrl;
     // const cachedData = await redisClient.get(key);
     // if (cachedData) {
     //   return res.json(JSON.parse(cachedData));
@@ -346,6 +346,7 @@ const courseCtrl = {
       next(error);
     }
   },
+
   enrollCourse: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
