@@ -99,6 +99,7 @@ const courseCtrl = {
         isPublished: true,
         isPublished: 0,
         updatedAt: 0,
+        reviews:0,
         __v: 0,
         ratings: 0,
       })
@@ -114,13 +115,24 @@ const courseCtrl = {
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
       }
-      res.json({
+      const user = req.user;
+      const courseIdIndex = user.ownedCourse.findIndex((course) =>
+        course.courseId.equals(courseId)
+      );
+      const responsePayLoad = {
         success: true,
         message: "Course Found",
         data: {
           course,
-        },
-      });
+        }
+      }
+      // let completedVideo = 0;
+      if (courseIdIndex != -1) {
+        const completedVideo = user.ownedCourse[courseIdIndex].completedVideo.length;
+        responsePayLoad.data.completedVideo = completedVideo;
+
+      }
+      res.json(responsePayLoad);
     } catch (e) {
       next(e);
     }
