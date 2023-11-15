@@ -53,29 +53,26 @@ const courseCtrl = {
           },
         },
         {
+          $unwind: "$createdBy",
+        },
+        {
           $project: {
-            ratings: 0,
-            videos: 0,
-            isPublished: 0,
-            updatedAt: 0,
-            ownedBy: 0,
-            __v: 0,
-            createdBy: {
-              email: 0,
-              password: 0,
-              verify: 0,
-              role: 0,
-              shortId: 0,
-              __v: 0,
-              createdCourse: 0,
-              ownedCourse: 0,
-              cart: 0,
-              wishlist: 0,
-            },
+            _id: 1,
+            title: 1,
+            description: 1,
+            price: 1,
+            duration: 1,
+            totalStudents: 1,
+            category: 1,
+            rating: 1,
+            thumbnail: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            createdBy: { _id: 1, username: 1, name: 1 },
           },
         },
       ]);
-      // .populate("createdBy", "_id username name createdCourse ");
+
       const value = {
         success: true,
         message: "list of all courses",
@@ -99,7 +96,7 @@ const courseCtrl = {
         isPublished: true,
         isPublished: 0,
         updatedAt: 0,
-        reviews:0,
+        reviews: 0,
         __v: 0,
         ratings: 0,
       })
@@ -124,13 +121,13 @@ const courseCtrl = {
         message: "Course Found",
         data: {
           course,
-        }
-      }
+        },
+      };
       // let completedVideo = 0;
       if (courseIdIndex != -1) {
-        const completedVideo = user.ownedCourse[courseIdIndex].completedVideo.length;
+        const completedVideo =
+          user.ownedCourse[courseIdIndex].completedVideo.length;
         responsePayLoad.data.completedVideo = completedVideo;
-
       }
       res.json(responsePayLoad);
     } catch (e) {
@@ -180,6 +177,9 @@ const courseCtrl = {
           $sort: {
             createdAt: -1,
           },
+        },
+        {
+          $unwind: "$createdBy",
         },
 
         {
@@ -259,6 +259,7 @@ const courseCtrl = {
       const categories = await Category.find()
         .skip(startIndex)
         .limit(pageSize)
+        .select({ __v: 0 })
         .populate({
           path: "courses",
           select: "_id title description category price rating duration ",
@@ -295,13 +296,56 @@ const courseCtrl = {
 
   searchCourses: async (req, res, next) => {
     try {
-      const query = req.query.coursetitle;
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      const startIndex = (page - 1) * pageSize;
+
+      const searchquery = req.query.coursetitle;
+      const result = await Course.aggregate([
+        {
+          $search: {
+            text: {
+              path: "title",
+              query: searchquery,
+              fuzzy: {},
+            },
+          },
+        },
+        {
+          $facet: {
+            searchResults: [
+              { $skip: startIndex },
+              { $limit: pageSize },
+              {
+                $project: {
+                  _id: 1,
+                  title: 1,
+                },
+              },
+            ],
+            totalCount: [
+              { $count: "count" },
+            ],
+          },
+        },
+      ]);
+      const searchResults = result[0].searchResults;
+      const totalCount = result[0].totalCount[0].count;
+      const totalPages = Math.ceil(totalCount / pageSize);
+      
+
+      res.json({
+        success: true,
+        message: "List of courses from search",
+        data: {
+          courses:searchResults,
+          totalPages,
+        },
+      });
     } catch (error) {
-      //res.status(500).json({ error: 'Error searching for courses.' });
       next(error);
     }
   },
-
 
   enrollCourse: async (req, res, next) => {
     try {
@@ -327,18 +371,68 @@ const courseCtrl = {
   },
   getPopularCourses: async (req, res, next) => {
     try {
-      const popularCourses = await Course.find({
-        rating: { $gt: 4.2 },
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      const startIndex = (page - 1) * pageSize;
+      console.log(startIndex);
+      const coursesCount = await Course.countDocuments({
         isPublished: true,
-      })
-        .sort({ rating: -1 })
-        .limit(10);
+        rating: { $gte: 4 },
+      });
+      console.log(coursesCount);
+      const totalPages = Math.ceil(coursesCount / pageSize);
+      const popularCourses = await Course.aggregate([
+        {
+          $match: {
+            isPublished: true,
+            rating: { $gte: 4 },
+          },
+        },
+        {
+          $sort: { rating: -1 },
+        },
+        {
+          $skip: startIndex,
+        },
+        {
+          $limit: pageSize,
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "createdBy",
+            foreignField: "_id",
+            as: "createdBy",
+          },
+        },
+        {
+          $unwind: "$createdBy",
+        },
+
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            description: 1,
+            price: 1,
+            duration: 1,
+            totalStudents: 1,
+            category: 1,
+            rating: 1,
+            thumbnail: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            createdBy: { _id: 1, username: 1, name: 1 },
+          },
+        },
+      ]);
 
       res.json({
         success: true,
         message: "List of popular courses",
         data: {
           courses: popularCourses,
+          totalPages,
         },
       });
     } catch (e) {
@@ -495,7 +589,7 @@ const courseCtrl = {
       console.log(reviewIndex);
 
       const review = course.reviews[reviewIndex];
-    
+
       course.ratings.set(review.rating, course.ratings.get(review.rating) - 1);
       course.reviews.splice(reviewIndex, 1);
 
@@ -509,8 +603,7 @@ const courseCtrl = {
       const weightedRating = totalWeightedRating / totalStudents;
       if (weightedRating) {
         course.rating = weightedRating;
-      }
-      else {
+      } else {
         course.rating = 4;
       }
       await course.save();

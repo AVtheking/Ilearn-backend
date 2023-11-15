@@ -14,7 +14,7 @@ teacherRouter.post("/upload-video/:courseId", auth, uploadNotes.fields([{name:"v
 teacherRouter.post("/publish-course/:courseId", auth, teacherCtrl.publishCourse);
 // teacherRouter.post("/add-category", auth, teacherCtrl.addCategory)
 
-teacherRouter.get('/search-teacher', teacherCtrl.searchTeacher);
+teacherRouter.get('/search-teacher',auth, teacherCtrl.searchTeacher);
 teacherRouter.get("/created-course", auth, teacherCtrl.getCreatedCourses);
 
 teacherRouter.delete("/remove-lecture/:courseId/lecture/:lectureId",auth,teacherCtrl.removeLecture)

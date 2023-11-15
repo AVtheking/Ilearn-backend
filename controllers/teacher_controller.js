@@ -6,7 +6,6 @@ const fs = require("fs");
 const path = require("path");
 
 const {
-
   CourseSchema,
   videoSchema,
   courseIdSchema,
@@ -497,20 +496,53 @@ const teacherCtrl = {
   },
   searchTeacher: async (req, res, next) => {
     try {
-      const searchteacher = req.query.q;
-
-      if (!searchteacher) {
-        return res.status(400).json({ error: "Teacher name is required." });
-      }
-
-      const teacher = await teacher.find({
-        $or: [
-          { name: { $regex: new RegExp(searchQuery, "i") } },
-          { expertise: { $regex: new RegExp(searchQuery, "i") } }, //what is this?
-        ],
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      const skip = (page - 1) * pageSize;
+      const query = req.query.teacher;
+      console.log(query);
+      const teachers = await User.aggregate([
+        {
+          $search: {
+            text: {
+              path: "username",
+              query: query,
+              fuzzy: {},
+            },
+          },
+        },
+        {
+          $facet: {
+            searchResults: [
+              { $skip: skip },
+              { $limit: pageSize },
+              {
+                $project: {
+                  _id: 1,
+                  username: 1,
+                  profileimg: 1,
+                },
+              },
+            ],
+            totalCount: [
+              {
+                $count: "count",
+              },
+            ],
+          },
+        },
+      ]);
+      const searchResults = teachers[0].searchResults;
+      const totalCount = teachers[0].totalCount[0]?.count || 0;
+      const totalPages = Math.ceil(totalCount / pageSize);
+      res.json({
+        success: true,
+        message: "Teachers found",
+        data: {
+          teachers: searchResults,
+          totalPages,
+        },
       });
-
-      res.json(teacher);
     } catch (err) {
       next(err);
     }
