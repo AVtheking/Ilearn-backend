@@ -1,4 +1,5 @@
 const { User, Course } = require("../models");
+const { $where } = require("../models/comment");
 const { profileSchema, courseIdSchema } = require("../utils/validator");
 
 const userCtrl = {
@@ -214,6 +215,48 @@ const userCtrl = {
       next(e);
     }
   },
+  //   addToOC: async (req, res, next) => {
+  //     const courseId = req.params.courseId;
+  //     const lectureId = req.params.lectureId;
+  //     const courseIndex = user.ownedCourse.findIndex((course) =>
+  //       course.courseId.equals(courseId)
+  //     );
+
+  //     const user = await User.findById(req.user._id);
+  //     if (courseIndex == -1) {
+  //       user.ownedCourse.push({
+  //         courseId: courseId,
+  //         completedVideo: [],
+  //       });
+  //     }
+  //     await user.save();
+  //     res.json({
+  //       success: true,
+  //       message: "Course added to owned courses",
+  //     });
+  //   },
+  //   addlecture: async (req, res, next) => {
+  //     const lectureId = req.params.lectureId;
+  //     const courseId = req.params.courseId;
+  //     const user = req.user;
+  //     const courseIndex = user.ownedCourse.findIndex((course) =>
+  //       course.courseId.equals(courseId)
+  //     );
+  //     if (courseIndex != -1) {
+  //       const completedVideoIndex =
+  //         user.ownedCourse[courseIndex].completedVideo.indexOf(lectureId);
+  //       if (completedVideoIndex == -1) {
+  //         user.ownedCourse[courseIndex].completedVideo.push(lectureId);
+  //       }
+  //     }
+  //     await user.save();
+  //     res.json({
+  //       message: "lecture added to owned courses",
+  //       data: {
+  //         completedVideo: user.ownedCourse[courseIndex].completedVideo,
+  //       },
+  //     });
+  //   },
   getCompletedCourse: async (req, res, next) => {
     try {
       //   const user = req.user;
@@ -227,6 +270,48 @@ const userCtrl = {
         message: "completed courses",
         data: {
           completedCourse: user.completedCourse,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getOwnedCourses: async (req, res, next) => {
+    try {
+      const user = await User.aggregate([
+        {
+          $match: { _id: req.user._id },
+        },
+        { $unwind: "$ownedCourse" },
+        {
+          $lookup: {
+            from: "courses",
+            localField: "ownedCourse.courseId",
+            foreignField: "_id",
+            as: "course",
+          },
+        },
+        {
+          $unwind: "$course",
+        },
+        {
+          $project: {
+            _id: 0,
+            courseid: "$course._id",
+            title: "$course.title",
+            description: "$course.description",
+            thumbnail: "$course.thumbnail",
+            category: "$course.category",
+            price: "$course.price",
+            rating: "$course.rating",
+            duration: "$course.duration",
+            completedVideo: { $size: "$ownedCourse.completedVideo" },
+          },
+        },
+      ]);
+      res.json({
+        data: {
+          ownedCourse: user,
         },
       });
     } catch (e) {
