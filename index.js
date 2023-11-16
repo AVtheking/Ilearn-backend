@@ -10,6 +10,7 @@ const {
   courseRouter,
   commentRouter,
   userRouter,
+  paymentRouter,
 } = require("./routes");
 
 require("dotenv").config();
@@ -18,9 +19,7 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 
-
 const initializedSocket = require("./utils/socket");
-
 
 app.use(
   cors({
@@ -30,7 +29,7 @@ app.use(
   })
 );
 app.use(express.static("public"));
-// app.set("view engine", "ejs");
+app.set("view engine", "ejs");
 // app.get("/upload", async (req, res) => {
 //   res.render("upload");
 // });
@@ -40,8 +39,8 @@ app.use(errorMiddleware);
 app.use(authRouter, errorMiddleware);
 app.use(teacherRouter, errorMiddleware);
 app.use(courseRouter, errorMiddleware);
-app.use(userRouter,errorMiddleware)
-
+app.use(userRouter, errorMiddleware);
+app.use(paymentRouter, errorMiddleware);
 app.use(commentRouter, errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
@@ -53,6 +52,5 @@ mongoose.connect(process.env.DB).then(() => {
   console.log("connection is successful");
   server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server is running on port ${PORT}`);
-  
   });
 });
