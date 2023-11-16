@@ -60,11 +60,11 @@ const teacherCtrl = {
       const page = parseInt(req.query.page);
       const pageSize = parseInt(req.query.pagesize);
       const skip = (page - 1) * pageSize;
-      const totalCourses = await Courses.countDocuments({
+      const totalCourses = await Course.countDocuments({
         createdBy: req.user._id,
       });
       const totalPages = Math.ceil(totalCourses / pageSize);
-      const courses = await Courses.aggregate([
+      const courses = await Course.aggregate([
         {
           $match: { createdBy: req.user._id },
         },
@@ -375,6 +375,9 @@ const teacherCtrl = {
           new ErrorHandler(400, "You are not the creater of the course")
         );
       }
+      const courseIndex = req.user.createdCourse.indexOf(courseId);
+      req.user.createdCourse.splice(courseIndex, 1);
+      await req.user.save();
       fs.unlinkSync(course.thumbnail);
       for (const videoId of course.videos) {
         const video = await Video.findById(videoId);
