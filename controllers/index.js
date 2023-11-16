@@ -4,3 +4,4 @@ module.exports.courseCtrl = require("./course_controller.js");
 module.exports.videoCtrl = require("./video_controller.js");
 module.exports.userCtrl = require("./user_controller.js");
 module.exports.commentCtrl = require("./comment_controlller.js");
+module.exports.paymentCtrl = require("./payment_controller.js");
