@@ -20,6 +20,7 @@ const http = require("http");
 const server = http.createServer(app);
 
 const initializedSocket = require("./utils/socket");
+// const { Course, Video, Category } = require("./models");
 
 app.use(
   cors({
@@ -51,6 +52,7 @@ initializedSocket(server);
 mongoose.connect(process.env.DB).then(() => {
   console.log("connection is successful");
   server.listen(PORT, "0.0.0.0", () => {
+    
     console.log(`Server is running on port ${PORT}`);
   });
 });

@@ -10,7 +10,8 @@ courseRouter.get("/video/:courseId/lecture/:lectureId", auth, videoCtrl.streamVi
 courseRouter.get("/getCategoriesName", auth, courseCtrl.getCategoriesName);
 courseRouter.get("/getCategoriesData", auth, courseCtrl.getCategoriesData);
 courseRouter.get("/get-reviews/:courseId", auth, courseCtrl.getReviews);
-courseRouter.get("/get-popular-course",auth, courseCtrl.getPopularCourses);
+courseRouter.get("/get-popular-course", auth, courseCtrl.getPopularCourses);
+
 
 courseRouter.get("/search-course", courseCtrl.searchCourses);
 courseRouter.get("/get-popular-course", courseCtrl.getPopularCourses);
@@ -18,9 +19,10 @@ courseRouter.get("/download-notes/:courseId", auth, courseCtrl.downloadNotes);
 
 
 courseRouter.post("/rate-course", auth, courseCtrl.rateCourse);
-courseRouter.post("/enroll/:courseId", auth, courseCtrl.enrollCourse);
+
 
 courseRouter.patch("/edit-Review/", auth, courseCtrl.editReview);
+
 courseRouter.delete("/delete-Review/", auth, courseCtrl.deleteReview);
 
 

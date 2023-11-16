@@ -3,10 +3,19 @@ require("dotenv").config();
 
 var crypto = require("crypto");
 const { ErrorHandler } = require("../middlewares");
+const { User, Course } = require("../models");
+const { courseIdSchema } = require("../utils/validator");
 
 const paymentCtrl = {
   createOrder: async (req, res, next) => {
     try {
+      const courseid = req.params.courseId;
+      const result = await courseIdSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "No course found"));
+      }
       const amount = req.body.amount;
 
       const razorpayInstance = new Razorpay({
@@ -44,7 +53,9 @@ const paymentCtrl = {
       //   console.log("inside checkPayment");
       // console.log(`req.body.order_id is ${req.body.order_id}`)
       // console.log(`req.body.payment_id is ${req.body.payment_id}`)
-
+      const courseid = req.params.courseId;
+      const result = await courseIdSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
       body = req.body.order_id + "|" + req.body.payment_id;
       var expectedSignature = crypto
         .createHmac("sha256", process.env.KEY_SECRET)
@@ -55,8 +66,16 @@ const paymentCtrl = {
       console.log("sig" + expectedSignature);
 
       if (expectedSignature === req.body.signature) {
-        // console.log("Payment successful");
-        return res.status(200).json({ status: "success" });
+        await Course.findByIdAndUpdate(courseId, {
+          $inc: { totalStudents: 1 },
+        });
+        await User.findByIdAndUpdate(req.user._id, {
+          $push: { ownedCourse: { courseId: courseId } },
+        });
+          return res.json({ 
+            success: true, 
+            message: "Payment successful"
+        });
       } else {
         // console.log("Payment failed");
         return next(new ErrorHandler(400, "Payment failed"));
