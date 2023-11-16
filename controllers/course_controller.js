@@ -23,15 +23,11 @@ const courseCtrl = {
     try {
       const page = parseInt(req.query.page);
       const pageSize = parseInt(req.query.pagesize);
-      // const limit = req.query.limit
+
       const startIndex = (page - 1) * pageSize;
       const coursesCount = await Course.countDocuments();
       const totalPages = Math.ceil(coursesCount / pageSize);
 
-      // const courses = await Course.find({ isPublished: true })
-      //   .sort("-createdAt")
-      //   .skip(startIndex)
-      //   .limit(pageSize)
       const courses = await Course.aggregate([
         {
           $match: {
@@ -95,7 +91,6 @@ const courseCtrl = {
       const course = await Course.findById(courseId, {
         isPublished: true,
         isPublished: 0,
-        updatedAt: 0,
         reviews: 0,
         __v: 0,
         ratings: 0,
@@ -193,6 +188,8 @@ const courseCtrl = {
             category: 1,
             rating: 1,
             thumbnail: 1,
+            createdAt: 1,
+            updatedAt: 1,
             createdBy: { _id: 1, username: 1, name: 1 },
           },
         },
@@ -252,7 +249,7 @@ const courseCtrl = {
       const pageSize = parseInt(req.query.pagesize);
       const limit = parseInt(req.query.limit);
       const startIndex = (page - 1) * pageSize;
-      // const endIndex = page * pageSize
+
       const categoriesCount = await Category.countDocuments();
       const totalPages = Math.ceil(categoriesCount / pageSize);
 
@@ -262,7 +259,8 @@ const courseCtrl = {
         .select({ __v: 0 })
         .populate({
           path: "courses",
-          select: "_id title description category price rating duration ",
+          select:
+            "_id title description category price rating duration createdAt updatedAt ",
           options: {
             limit: limit ? limit : pageSize,
           },
@@ -272,9 +270,6 @@ const courseCtrl = {
             select: "_id username name",
           },
         });
-      console.log(page);
-
-      // const totalPages = Math.ceil(categories.length / pageSize);
 
       const value = {
         success: true,
@@ -323,22 +318,19 @@ const courseCtrl = {
                 },
               },
             ],
-            totalCount: [
-              { $count: "count" },
-            ],
+            totalCount: [{ $count: "count" }],
           },
         },
       ]);
       const searchResults = result[0].searchResults;
       const totalCount = result[0].totalCount[0].count;
       const totalPages = Math.ceil(totalCount / pageSize);
-      
 
       res.json({
         success: true,
         message: "List of courses from search",
         data: {
-          courses:searchResults,
+          courses: searchResults,
           totalPages,
         },
       });
@@ -346,46 +338,23 @@ const courseCtrl = {
       next(error);
     }
   },
-
-  enrollCourse: async (req, res, next) => {
-    try {
-      const courseId = req.params.courseId;
-      const userId = req.user.id;
-
-      const existingEnrollment = await Enrollment.findOne({ courseId, userId });
-      if (existingEnrollment) {
-        return next(
-          new ErrorHandler(400, "You are already enrolled in this course.")
-        );
-      }
-
-      const newEnrollment = new Enrollment({ courseId, userId });
-      await newEnrollment.save();
-
-      res.json({
-        message: "Enrollment successful",
-      });
-    } catch (err) {
-      next(err);
-    }
-  },
   getPopularCourses: async (req, res, next) => {
     try {
       const page = parseInt(req.query.page);
       const pageSize = parseInt(req.query.pagesize);
       const startIndex = (page - 1) * pageSize;
-      console.log(startIndex);
+
       const coursesCount = await Course.countDocuments({
         isPublished: true,
-        rating: { $gte: 4 },
+        rating: { $gte: 4.2 },
       });
-      console.log(coursesCount);
+
       const totalPages = Math.ceil(coursesCount / pageSize);
       const popularCourses = await Course.aggregate([
         {
           $match: {
             isPublished: true,
-            rating: { $gte: 4 },
+            rating: { $gte: 4.2 },
           },
         },
         {
@@ -442,11 +411,10 @@ const courseCtrl = {
 
   rateCourse: async (req, res, next) => {
     try {
-      // const { courseId, rating, comment } = req.body;
       const result = await ratingSchema.validateAsync(req.body);
       const { courseId, rating, comment } = result;
       const userRating = rating;
-      console.log(userRating);
+
       const course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(404, "Course not found"));
@@ -475,13 +443,13 @@ const courseCtrl = {
       }
       const weightedRating = totalWeightedRating / totalStudents;
       course.rating = weightedRating;
-      // await course.save();
+
       const review = {
         user: req.user._id,
         rating: userRating,
         comment,
       };
-      // await review.save()
+
       course.reviews.push(review);
       await course.save();
 
@@ -533,7 +501,6 @@ const courseCtrl = {
   },
   editReview: async (req, res, next) => {
     try {
-      // const { courseId, reviewId, review } = req.body;
       const result = await editReviewSchema.validateAsync(req.body);
       const { courseId, reviewId, review } = result;
       const user = req.user;
@@ -567,7 +534,6 @@ const courseCtrl = {
   },
   deleteReview: async (req, res, next) => {
     try {
-      // const { courseId, reviewId } = req.body;
       const result = await deleteReviewSchema.validateAsync(req.body);
       const { courseId, reviewId } = result;
       const user = req.user;
@@ -586,7 +552,6 @@ const courseCtrl = {
           new ErrorHandler(400, "You are not the owner of the review")
         );
       }
-      console.log(reviewIndex);
 
       const review = course.reviews[reviewIndex];
 
