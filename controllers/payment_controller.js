@@ -72,9 +72,9 @@ const paymentCtrl = {
         await User.findByIdAndUpdate(req.user._id, {
           $push: { ownedCourse: { courseId: courseId } },
         });
-          return res.json({ 
-            success: true, 
-            message: "Payment successful"
+        return res.json({
+          success: true,
+          message: "Payment successful",
         });
       } else {
         // console.log("Payment failed");
