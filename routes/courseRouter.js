@@ -6,7 +6,7 @@ const courseRouter = express.Router();
 courseRouter.get("/getCourse", auth, courseCtrl.getCourses);
 courseRouter.get("/getCourseBycategory/:category",auth,courseCtrl.getCoursesByCategory);
 courseRouter.get("/getCourseById/:courseId", auth, courseCtrl.getCourseByid);
-courseRouter.get("/video/:courseId/lecture/:lectureId", auth, videoCtrl.streamVideo);
+courseRouter.get("/video/:courseId/lecture/:lectureId", videoCtrl.streamVideo);
 courseRouter.get("/getCategoriesName", auth, courseCtrl.getCategoriesName);
 courseRouter.get("/getCategoriesData", auth, courseCtrl.getCategoriesData);
 courseRouter.get("/get-reviews/:courseId", auth, courseCtrl.getReviews);
