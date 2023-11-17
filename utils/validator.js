@@ -59,6 +59,10 @@ const videoSchema = Joi.object({
 const courseIdSchema = Joi.object({
   params: Joi.string().required(),
 });
+const userIdSchema = Joi.object({
+  userId: Joi.string().required(),
+
+})
 const publishCourseSchema = Joi.object({
   price: Joi.string().required(),
   duration: Joi.string().required(),
@@ -110,4 +114,5 @@ module.exports = {
   ratingSchema,
   editReviewSchema,
   deleteReviewSchema,
+  userIdSchema
 };

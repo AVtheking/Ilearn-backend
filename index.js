@@ -31,9 +31,9 @@ app.use(
 );
 app.use(express.static("public"));
 app.set("view engine", "ejs");
-// app.get("/upload", async (req, res) => {
-//   res.render("upload");
-// });
+app.get("/upload", async (req, res) => {
+  res.render("upload");
+});
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(errorMiddleware);
@@ -52,7 +52,6 @@ initializedSocket(server);
 mongoose.connect(process.env.DB).then(() => {
   console.log("connection is successful");
   server.listen(PORT, "0.0.0.0", () => {
-    
     console.log(`Server is running on port ${PORT}`);
   });
 });

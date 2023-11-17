@@ -298,6 +298,11 @@ const courseCtrl = {
       const searchquery = req.query.coursetitle;
       const result = await Course.aggregate([
         {
+          $match: {
+          isPublished: true,
+        }
+      },
+        {
           $search: {
             text: {
               path: "title",

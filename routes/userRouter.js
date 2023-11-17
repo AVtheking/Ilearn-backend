@@ -9,6 +9,7 @@ userRouter.get("/get-wishlist", auth, userCtrl.getWishlist);
 userRouter.get("/search-user", userCtrl.searchUser); 
 userRouter.get("/completed-course", auth, userCtrl.getCompletedCourse);
 userRouter.get("/get-ownedCourses", auth, userCtrl.getOwnedCourses);
+userRouter.get("/get-user/:userId", userCtrl.getUserById);
 
 userRouter.post("/add-cart/:courseId", auth, userCtrl.addCourseToCart);
 userRouter.post("/add-wishlist/:courseId", auth, userCtrl.addToWishlist);
