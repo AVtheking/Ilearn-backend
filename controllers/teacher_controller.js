@@ -143,7 +143,7 @@ const teacherCtrl = {
       let newCourse = new Course({
         title,
         description,
-        thumbnail: "public/thumbnail" + "/" + req.file.filename,
+        thumbnail: "thumbnail" + "/" + req.file.filename,
         createdBy: req.user,
         category,
       });
@@ -337,18 +337,18 @@ const teacherCtrl = {
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
+      let course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(404, "Course not found"));
+      }
       if (!course.createdBy.equals(req.user._id)) {
         return next(new ErrorHandler(401, "You are not the creater of course"));
       }
       if (!req.file) {
         return next(new ErrorHandler(400, "Please upload a file"));
       }
-      let course = await Course.findById(courseId);
-      if (!course) {
-        return next(new ErrorHandler(400, "Course not found"));
-      }
       fs.unlinkSync(course.thumbnail);
-      course.thumbnail = "public/thumbnail" + "/" + req.file.filename;
+      course.thumbnail = "thumbnail" + "/" + req.file.filename;
       // await Course.findByIdAndUpdate(courseId, {
       //   thumbnail: "public/thumbnail" + "/" + req.file.filename,
       // });

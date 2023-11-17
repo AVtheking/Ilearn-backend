@@ -1,12 +1,17 @@
+const { ErrorHandler } = require("../middlewares/error");
 const { User, Course } = require("../models");
 const { $where } = require("../models/comment");
-const { profileSchema, courseIdSchema } = require("../utils/validator");
+const {
+  profileSchema,
+  courseIdSchema,
+  userIdSchema,
+} = require("../utils/validator");
 
 const userCtrl = {
   uploadProfilePicture: async (req, res, next) => {
     try {
       const user = await User.findById(req.user._id);
-      user.profileimg = `public/thumbnail` + "/" + req.file.filename;
+      user.profileimg = `thumbnail` + "/" + req.file.filename;
       await user.save();
       res.json({
         success: true,
@@ -55,7 +60,7 @@ const userCtrl = {
       const user = req.user;
       const course = await Course.findById(courseId);
       if (!course) {
-        return next(new ErrorHandler(400, "No course found"));
+        return next(new ErrorHandler(404, "No course found"));
       }
       if (!course.isPublished) {
         return next(new ErrorHandler(400, "Course is not published yet"));
@@ -78,7 +83,7 @@ const userCtrl = {
       const user = req.user;
       const courseIndex = user.cart.indexOf(courseId);
       if (courseIndex == -1) {
-        return next(new ErrorHandler(400, "No course found"));
+        return next(new ErrorHandler(404, "No course found"));
       }
       user.cart.splice(courseIndex, 1);
       await user.save();
@@ -134,7 +139,7 @@ const userCtrl = {
       const courseId = result.params;
       const course = await Course.findById(courseId);
       if (!course) {
-        return next(new ErrorHandler(400, "No course found"));
+        return next(new ErrorHandler(404, "No course found"));
       }
       if (!course.isPublished) {
         return next(new ErrorHandler(400, "Course is not published yet"));
@@ -161,7 +166,7 @@ const userCtrl = {
       const user = req.user;
       const courseIndex = user.wishlist.indexOf(courseId);
       if (courseIndex == -1) {
-        return next(new ErrorHandler(400, "No course found"));
+        return next(new ErrorHandler(404, "No course found"));
       }
       user.wishlist.splice(courseIndex, 1);
       await user.save();
@@ -314,6 +319,34 @@ const userCtrl = {
           ownedCourse: user,
         },
       });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getUserById: async (req, res, next) => {
+    try {
+      const userid = req.params.userId;
+      console.log(userid)
+      const result = await userIdSchema.validateAsync({ userId: userid });
+      const userId = result.userId;
+      const user = await User.findById(userId, {
+        name: 1,
+        username: 1,
+        domain: 1,
+        bio: 1,
+        profileimg: 1,
+      });
+      if (!user) {
+        return next(new ErrorHandler(404, "No user found"));
+
+      }
+      res.json({
+        success: true,
+        message: "user found",
+        data: {
+          user,
+        },
+      })
     } catch (e) {
       next(e);
     }
