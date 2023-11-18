@@ -7,6 +7,7 @@ const {
   editReviewSchema,
   deleteReviewSchema,
 } = require("../utils/validator");
+const { count } = require("../models/comment");
 //const Enrollment = require('../models/Enrollment');
 
 // const redisClient = redis.createClient();
@@ -97,7 +98,7 @@ const courseCtrl = {
       })
         .populate({
           path: "createdBy",
-          select: "_id username name",
+          select: "_id username name profileimg  domain bio",
         })
         .populate({
           path: "videos",
@@ -260,7 +261,7 @@ const courseCtrl = {
         .populate({
           path: "courses",
           select:
-            "_id title description category price rating duration createdAt updatedAt ",
+            "_id title description category price thumbnail rating duration createdAt updatedAt ",
           options: {
             limit: limit ? limit : pageSize,
           },
@@ -298,17 +299,17 @@ const courseCtrl = {
       const searchquery = req.query.coursetitle;
       const result = await Course.aggregate([
         {
-          $match: {
-          isPublished: true,
-        }
-      },
-        {
           $search: {
             text: {
               path: "title",
               query: searchquery,
               fuzzy: {},
             },
+          },
+        },
+        {
+          $match: {
+            isPublished: true,
           },
         },
         {
@@ -326,6 +327,7 @@ const courseCtrl = {
             totalCount: [{ $count: "count" }],
           },
         },
+      
       ]);
       const searchResults = result[0].searchResults;
       const totalCount = result[0].totalCount[0].count;
@@ -487,17 +489,32 @@ const courseCtrl = {
   getReviews: async (req, res, next) => {
     try {
       const params = req.params.courseId;
+      const page = parseInt(req.query.page);
+      const pageSize = parseInt(req.query.pagesize);
+      const startIndex = (page - 1) * pageSize;
       const result = await courseIdSchema.validateAsync({ params });
       const courseId = result.params;
-      const course = await Course.findById(courseId);
+      const course = await Course.findById(courseId).populate({
+        path: "reviews.user",
+        select: "_id username name profileimg",
+      });
       if (!course) {
         return next(new ErrorHandler(404, "Course not found"));
       }
+      // const totalPage = await course.reviews.countDocuments();
+      // const totalPages = Math.ceil(totalPage / pageSize);
+      const paginatedReviews = course.reviews.slice(
+        startIndex,
+        startIndex + pageSize
+      );
+      const totalPages = Math.ceil(course.reviews.length / pageSize);
+      // console.log(course.reviews.length);
       res.json({
         success: true,
         message: "List of reviews",
         data: {
-          reviews: course.reviews,
+          reviews: paginatedReviews,
+          totalPages,
         },
       });
     } catch (e) {
