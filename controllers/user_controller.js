@@ -65,6 +65,10 @@ const userCtrl = {
       if (!course.isPublished) {
         return next(new ErrorHandler(400, "Course is not published yet"));
       }
+      const courseIndex = user.cart.indexOf(courseId);
+      if (courseIndex != -1) {
+        return next(new ErrorHandler(400, "Course already in cart"));
+      }
       user.cart.push(courseId);
       await user.save();
       res.json({
