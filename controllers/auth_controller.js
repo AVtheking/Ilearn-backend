@@ -12,7 +12,7 @@ const authCtrl = {
   signUp: async (req, res, next) => {
     try {
       const result = await authSchema.validateAsync(req.body);
-      console.log(result);
+      // console.log(result);
       const username = result.username;
       const name = result.name;
       const email = result.email;
@@ -188,7 +188,7 @@ const authCtrl = {
       const token = jwt.sign({ id: user._id }, process.env.RESET, {
         expiresIn: 600,
       });
-      console.log(token);
+      // console.log(token);
 
       res.json({
         success: true,
@@ -239,7 +239,7 @@ const authCtrl = {
     try {
       // const { newPassword } = req.body;
       const result = await passwordSchema.validateAsync(req.body);
-      console.log(result);
+      // console.log(result);
       const newPassword = result.password;
       let token = req.headers["authorization"];
 

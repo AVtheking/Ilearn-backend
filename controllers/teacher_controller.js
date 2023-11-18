@@ -411,7 +411,7 @@ const teacherCtrl = {
       const videoTitle = result.videoTitle;
       let course = await Course.findById(courseId);
       if (!course) {
-        return next(new ErrorHandler(400, "lecture added successfully"));
+        return next(new ErrorHandler(404, "Course not found"));
       }
       if (!course.createdBy.equals(req.user._id)) {
         return next(
@@ -503,7 +503,7 @@ const teacherCtrl = {
       const pageSize = parseInt(req.query.pagesize);
       const skip = (page - 1) * pageSize;
       const query = req.query.teacher;
-      console.log(query);
+      // console.log(query);
       const teachers = await User.aggregate([
         {
           $search: {

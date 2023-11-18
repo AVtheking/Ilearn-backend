@@ -6,7 +6,15 @@ const { User } = require("../models");
 // redisClient.connect().catch(console.error);
 const auth = async (req, res, next) => {
   try {
-    let token = req.headers["authorization"];
+    let token;
+    if (req.headers["authorization"]) {
+      token = req.headers["authorization"];
+    }
+
+    if (!token && req.query.token) {
+      token = req.query.token;
+    }
+
     if (!token) {
       return next(new ErrorHandler(400, "No Token"));
     }

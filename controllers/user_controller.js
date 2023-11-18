@@ -326,7 +326,7 @@ const userCtrl = {
   getUserById: async (req, res, next) => {
     try {
       const userid = req.params.userId;
-      console.log(userid)
+      // console.log(userid)
       const result = await userIdSchema.validateAsync({ userId: userid });
       const userId = result.userId;
       const user = await User.findById(userId, {
