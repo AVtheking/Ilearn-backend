@@ -28,7 +28,6 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm install
-    - run: echo ${{ secrets.NEW_ENV_FILE }} 
     - run: |
         touch .env
-        echo -e ${{ secrets.NEW_ENV_FILE }} > .env
+        echo '${{ secrets.NEW_ENV_FILE }} > .env
