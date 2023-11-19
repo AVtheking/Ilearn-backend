@@ -30,4 +30,4 @@ jobs:
     - run: echo ${{ secrets.NEW_ENV_FILE }} 
     - run: |
         touch .env
-        echo ${{ secrets.NEW_ENV_FILE }} > .env
+        echo -e "${{ secrets.NEW_ENV_FILE }}" > .env
