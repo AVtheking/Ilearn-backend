@@ -327,10 +327,10 @@ const courseCtrl = {
             totalCount: [{ $count: "count" }],
           },
         },
-      
       ]);
       const searchResults = result[0].searchResults;
       const totalCount = result[0].totalCount[0].count;
+
       const totalPages = Math.ceil(totalCount / pageSize);
 
       res.json({
@@ -429,6 +429,15 @@ const courseCtrl = {
       if (!course.isPublished) {
         return next(new ErrorHandler(400, "Course is not published yet"));
       }
+      const user = req.user;
+      const courseIdIndex = user.ownedCourse.findIndex((course) =>
+        course.courseId.equals(courseId)
+      );
+      if (courseIdIndex == -1) {
+        return next(
+          new ErrorHandler(400, "You have not enrolled in this course")
+        );
+      }
 
       const reviewIndex = course.reviews.findIndex((review) =>
         review.user.equals(req.user._id)
@@ -476,12 +485,50 @@ const courseCtrl = {
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const course = await Course.findById(courseId);
+      const user = req.user;
+      const courseIdIndex = user.ownedCourse.findIndex((course) =>
+        course.courseId.equals(courseId)
+      );
+      if (courseIdIndex == -1) {
+        return next(
+          new ErrorHandler(400, "You have not enrolled in this course")
+        );
+      }
       const notesIndex = course.notes.indexOf(path);
       if (notesIndex == -1) {
         return next(new ErrorHandler(400, "No notes found"));
       }
 
       res.download(path, notesIndex + "-" + "notes.pdf");
+    } catch (e) {
+      next(e);
+    }
+  },
+  downloadVideo: async (req, res, next) => {
+    try {
+      const courseid = req.params.courseId;
+      const lectureId = req.params.lectureId;
+      const result = await courseIdSchema.validateAsync({ params: courseid });
+      const courseId = result.params;
+      const course = await Course.findById(courseId);
+      const user = req.user;
+      if (!course) {
+        return next(new ErrorHandler(404, "No course found"));
+      }
+      const courseIdIndex = user.ownedCourse.findIndex((course) =>
+        course.courseId.equals(courseId)
+      );
+      if (courseIdIndex == -1) {
+        return next(
+          new ErrorHandler(400, "You have not enrolled in this course")
+        );
+      }
+      const videoIndex = course.videos.indexOf(lectureId);
+      if (videoIndex == -1) {
+        return next(new ErrorHandler(400, "Lecture not found in the course"));
+      }
+      const videoPath = req.query.path;
+      res.download(videoPath, videoIndex + "-" + "video.mp4");
     } catch (e) {
       next(e);
     }

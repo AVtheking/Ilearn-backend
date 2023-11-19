@@ -16,6 +16,7 @@ courseRouter.get("/get-popular-course", auth, courseCtrl.getPopularCourses);
 courseRouter.get("/search-course", courseCtrl.searchCourses);
 courseRouter.get("/get-popular-course", courseCtrl.getPopularCourses);
 courseRouter.get("/download-notes/:courseId", auth, courseCtrl.downloadNotes);
+courseRouter.get("/download-video/:courseId/lecture/:lectureId", auth, courseCtrl.downloadVideo);
 
 
 courseRouter.post("/rate-course", auth, courseCtrl.rateCourse);
