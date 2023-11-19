@@ -27,4 +27,5 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - run: echo "${{ secrets.ENV_FILE }}" > .env
+    - run: echo "ENV_FILE value:${{ secrets.NEW_ENV_FILE }}"
+    - run: echo "${{ secrets.NEW_ENV_FILE }}" > .env
