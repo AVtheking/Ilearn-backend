@@ -30,4 +30,4 @@ jobs:
     - run: npm install
     - run: |
         touch .env
-        echo '${{ secrets.NEW_ENV_FILE }} > .env
+        echo '${{ secrets.NEW_ENV_FILE }}' > .env
