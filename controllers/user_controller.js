@@ -21,6 +21,7 @@ const userCtrl = {
         },
       });
     } catch (error) {
+      fs.unlinksync("public/thumbnail" + "/" + req.file.filename);
       next(error);
     }
   },
@@ -342,7 +343,6 @@ const userCtrl = {
       });
       if (!user) {
         return next(new ErrorHandler(404, "No user found"));
-
       }
       res.json({
         success: true,
@@ -350,7 +350,7 @@ const userCtrl = {
         data: {
           user,
         },
-      })
+      });
     } catch (e) {
       next(e);
     }
