@@ -22,15 +22,16 @@ const courseSchema = new mongoose.Schema(
 
     videos: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Video",
+        video: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Video",
+        },
+        note: {
+          type: String,
+        },
       },
     ],
-    notes: [
-      {
-        type: String,
-      },
-    ],
+  
 
     category: {
       type: String,
@@ -62,10 +63,12 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    preview: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Video",
-    }],
+    preview: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
     isPublished: {
       type: Boolean,
       default: false,

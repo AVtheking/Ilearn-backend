@@ -163,7 +163,10 @@ const teacherCtrl = {
   },
 
   uploadVideo_toCourse: async (req, res, next) => {
-    let noteFilePath, videoFilePath, inputFilePath, inputFileName;
+    let noteFilePath = null,
+      videoFilePath,
+      inputFilePath,
+      inputFileName;
     try {
       const courseid = req.params.courseId;
       // console.log(courseid);
@@ -194,11 +197,15 @@ const teacherCtrl = {
 
       const notesfile = req.files.notes;
       const videofile = req.files.video;
-
-      noteFilePath = "public/course_notes" + "/" + notesfile[0].filename;
+      if (!videofile) {
+        return next(new ErrorHandler(400, "Please upload a video file"));
+      }
+      if (notesfile) {
+        noteFilePath = "public/course_notes" + "/" + notesfile[0].filename;
+      }
       videoFilePath = "public/course_videos" + "/" + videofile[0].filename;
 
-      course.notes.push(noteFilePath);
+      // course.notes.push(noteFilePath);
 
       //Video Conversion using worker threads
       const conversionPromise = resolutions.map((resolution) => {
@@ -234,7 +241,10 @@ const teacherCtrl = {
         videoDuration: du,
       });
       video = await video.save();
-      course.videos.push(video._id);
+      course.videos.push({
+        video: video._id,
+        note: noteFilePath,
+      });
 
       course = await course.save();
 
@@ -283,7 +293,7 @@ const teacherCtrl = {
       course.isPublished = true;
       course.price = price;
       course.duration = duration;
-      course.preview=courses.videos[0];
+      course.preview = course.videos[0].video;
       await course.save();
 
       let existingCategory = await Category.findOne({ name: category });

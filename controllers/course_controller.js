@@ -101,7 +101,7 @@ const courseCtrl = {
           select: "_id username name profileimg  domain bio",
         })
         .populate({
-          path: "videos",
+          path: "videos.video",
           select:
             "_id videoTitle videoUrl videoDuration videoUrl_144p videoUrl_360p videoUrl_720p",
         });
