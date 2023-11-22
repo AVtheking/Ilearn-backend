@@ -159,7 +159,7 @@ const teacherCtrl = {
         },
       });
     } catch (e) {
-      fs.unlinksync("public/thumbnail" + "/" + req.file.filename);
+      fs.unlinkSync("public/thumbnail" + "/" + req.file.filename);
       next(e);
     }
   },
@@ -255,12 +255,16 @@ const teacherCtrl = {
         video: video._id,
         note: noteFilePath,
       });
-
+      course.duration += du;
+    
       course = await course.save();
 
       res.json({
         success: true,
         message: "Video uploaded successfully",
+        data: {
+          duration: course.duration,
+        },
       });
     } catch (e) {
       if (noteFilePath) {
@@ -282,6 +286,7 @@ const teacherCtrl = {
       const courseId = result.params;
 
       const result2 = await publishCourseSchema.validateAsync(req.body);
+   
       const { price, duration, category } = result2;
       let course = await Course.findById(courseId);
       if (!course) {
@@ -312,10 +317,10 @@ const teacherCtrl = {
           name: category,
           courses: [courseId],
         });
-       await newCategory.save();
+        await newCategory.save();
       } else {
         existingCategory.courses.push(course._id);
-       await  existingCategory.save();
+        await existingCategory.save();
       }
       res.json({
         success: true,

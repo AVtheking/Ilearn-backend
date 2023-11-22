@@ -41,7 +41,7 @@ const courseSchema = new mongoose.Schema(
       default: 0,
     },
     duration: {
-      type: String,
+      type: Number,
       default: 0,
     },
     rating: {

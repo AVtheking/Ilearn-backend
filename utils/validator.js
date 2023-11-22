@@ -61,11 +61,10 @@ const courseIdSchema = Joi.object({
 });
 const userIdSchema = Joi.object({
   userId: Joi.string().required(),
-
-})
+});
 const publishCourseSchema = Joi.object({
   price: Joi.string().required(),
-  duration: Joi.string().required(),
+  duration: Joi.number().required(),
   category: Joi.string()
     .valid(
       "Web Development",
@@ -114,5 +113,5 @@ module.exports = {
   ratingSchema,
   editReviewSchema,
   deleteReviewSchema,
-  userIdSchema
+  userIdSchema,
 };
