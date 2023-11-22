@@ -124,6 +124,7 @@ const paymentCtrl = {
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
+      const user = req.user;
       body = req.body.order_id + "|" + req.body.payment_id;
       var expectedSignature = crypto
         .createHmac("sha256", process.env.KEY_SECRET)
@@ -134,6 +135,11 @@ const paymentCtrl = {
       console.log("sig" + expectedSignature);
 
       if (expectedSignature === req.body.signature) {
+        const cartCourseIndex = user.cart.indexOf(courseId);
+        if (cartCourseIndex != -1) {
+          user.cart.splice(cartCourseIndex, 1);
+          await user.save();
+        }
         await Course.findByIdAndUpdate(courseId, {
           $inc: { totalStudents: 1 },
         });
