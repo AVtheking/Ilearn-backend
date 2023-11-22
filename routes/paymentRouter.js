@@ -7,7 +7,9 @@ const { auth } = require("../middlewares");
 //     res.render("makePayment")
 // })
 
-paymentRouter.post("/createOrder/:courseId",auth, paymentCtrl.createOrder);
+paymentRouter.post("/createOrder/:courseId", auth, paymentCtrl.createOrder);
+paymentRouter.post("/createOrderCart/:amount", auth, paymentCtrl.createOrderCart);
+paymentRouter.post("/checkPaymentCart", auth, paymentCtrl.checkPaymentCart);
 
 paymentRouter.post("/checkPayment/:courseId",auth, paymentCtrl.checkPayment);
 
