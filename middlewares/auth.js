@@ -16,7 +16,7 @@ const auth = async (req, res, next) => {
     }
 
     if (!token) {
-      return next(new ErrorHandler(400, "No Token"));
+      return next(new ErrorHandler(401, "No Token"));
     }
 
     token = token.replace(/^Bearer\s+/, "");
