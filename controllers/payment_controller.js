@@ -11,7 +11,7 @@ const paymentCtrl = {
     try {
       const user = req.user;
       if(user.cart.length==0){
-        return next(new ErrorHandler(400, "No course in cart"));
+        return next(new ErrorHandler(404, "No course in cart"));
       }
       const amount = req.params.amount;
       const razorpayInstance = new Razorpay({
@@ -86,6 +86,13 @@ const paymentCtrl = {
       const course = await Course.findById(courseId);
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
+      }
+      const user = req.user;
+      const courseIdIndex = user.ownedCourse.findIndex((course) =>
+        course.courseId.equals(courseId)
+      );
+      if (courseIdIndex != -1) {
+        return next(new ErrorHandler(400, "You have already enrolled"));
       }
       const amount = course.price;
 
