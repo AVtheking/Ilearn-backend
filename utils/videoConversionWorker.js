@@ -1,8 +1,9 @@
 const { workerData, parentPort } = require("worker_threads");
+require("dotenv").config();
 const ffmpeg = require("fluent-ffmpeg");
 const fs = require("fs");
-ffmpeg.setFfmpegPath("C:ffmpeg\\bin\\ffmpeg.exe");
-ffmpeg.setFfprobePath("C:ffmpeg\\bin\\ffprobe.exe");
+ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH);
+ffmpeg.setFfprobePath(process.env.FFPROBE_PATH);
 
 const convertVideo = () => {
   const { resolution, inputFilePath, outputPath } = workerData;
