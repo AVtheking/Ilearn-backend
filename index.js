@@ -34,6 +34,9 @@ app.set("view engine", "ejs");
 app.get("/upload", async (req, res) => {
   res.render("upload");
 });
+app.get("/payment", async (req, res) => {
+  res.render("makePayment");
+});
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(errorMiddleware);

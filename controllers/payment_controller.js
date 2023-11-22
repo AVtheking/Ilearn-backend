@@ -22,8 +22,7 @@ const paymentCtrl = {
         key_id: process.env.KEY_ID,
         key_secret: process.env.KEY_SECRET,
       });
-      //   //   console.log(razorpayInstance);
-      //   console.log(process.env.KEY_SECRET);
+
       const options = {
         amount: amount * 100,
         currency: "INR",
@@ -50,9 +49,9 @@ const paymentCtrl = {
 
   checkPayment: async (req, res, next) => {
     try {
-      //   console.log("inside checkPayment");
-      // console.log(`req.body.order_id is ${req.body.order_id}`)
-      // console.log(`req.body.payment_id is ${req.body.payment_id}`)
+      console.log("inside checkPayment");
+      console.log(`req.body.order_id is ${req.body.order_id}`)
+      console.log(`req.body.payment_id is ${req.body.payment_id}`)
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
