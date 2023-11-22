@@ -149,6 +149,10 @@ const userCtrl = {
       if (!course.isPublished) {
         return next(new ErrorHandler(400, "Course is not published yet"));
       }
+      const courseIdIndex = user.wishlist.indexOf(courseId);
+      if (courseIdIndex != -1) {
+        return next(new ErrorHandler(400, "Course already in wishlist"));
+      }
       const user = req.user;
       user.wishlist.push(courseId);
       await user.save();
@@ -302,6 +306,16 @@ const userCtrl = {
           },
         },
         {
+          $lookup: {
+            from: "videos",
+            localField: "course.videos.video",
+            foreignField: "_id",
+            as: "video",
+          },
+          
+
+        },
+        {
           $unwind: "$course",
         },
         {
@@ -316,6 +330,7 @@ const userCtrl = {
             rating: "$course.rating",
             duration: "$course.duration",
             completedVideo: { $size: "$ownedCourse.completedVideo" },
+            totalVideos: { $size: "$course.videos" }, 
           },
         },
       ]);
@@ -331,7 +346,7 @@ const userCtrl = {
   getUserById: async (req, res, next) => {
     try {
       const userid = req.params.userId;
-      // console.log(userid)
+     
       const result = await userIdSchema.validateAsync({ userId: userid });
       const userId = result.userId;
       const user = await User.findById(userId, {
