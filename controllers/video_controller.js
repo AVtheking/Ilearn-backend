@@ -1,6 +1,6 @@
 const { ErrorHandler } = require("../middlewares/error");
 const fs = require("fs");
-const { Course } = require("../models");
+const { Course, User } = require("../models");
 const { courseIdSchema } = require("../utils/validator");
 
 const videoCtrl = {
