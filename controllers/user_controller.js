@@ -139,6 +139,7 @@ const userCtrl = {
   },
   addToWishlist: async (req, res, next) => {
     try {
+      const user = req.user;
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
@@ -153,7 +154,6 @@ const userCtrl = {
       if (courseIdIndex != -1) {
         return next(new ErrorHandler(400, "Course already in wishlist"));
       }
-      const user = req.user;
       user.wishlist.push(courseId);
       await user.save();
       res.json({
