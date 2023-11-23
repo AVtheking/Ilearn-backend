@@ -32,7 +32,10 @@ const videoCtrl = {
       const CHUNK_SIZE = 10 ** 6;
       const start = Number(range.replace(/\D/g, ""));
       const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
-      if (end == videoSize - 1) {
+      const remainingTime = Math.floor(
+        (videoSize - (end + 1)) / (CHUNK_SIZE / 1000)
+      );
+      if (remainingTime <= 60) {
         const completedVideoIndex =
           user.ownedCourse[courseIdIndex].completedVideo.indexOf(lectureId);
         if (completedVideoIndex == -1) {
