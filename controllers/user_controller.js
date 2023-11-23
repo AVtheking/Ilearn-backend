@@ -70,6 +70,14 @@ const userCtrl = {
       if (courseIndex != -1) {
         return next(new ErrorHandler(400, "Course already in cart"));
       }
+      const courseIdIndex = user.ownedCourse.findIndex((course) =>
+        course.courseId.equals(courseId)
+      );
+      if (courseIdIndex != -1) {
+        return next(
+          new ErrorHandler(400, "You have already enrolled in this course")
+        );
+      }
       user.cart.push(courseId);
       await user.save();
       res.json({
