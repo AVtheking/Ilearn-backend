@@ -85,6 +85,10 @@ const courseCtrl = {
     }
   },
   getCourseByid: async (req, res, next) => {
+    let in_cart = false;
+    let in_wishlist = false;
+    let owned = false;
+
     try {
       const id = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: id });
@@ -118,18 +122,37 @@ const courseCtrl = {
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
       );
+      const cartIdIndex = user.cart.findIndex((course) =>
+        course.equals(courseId)
+      );
+      const wishlistIdIndex = user.wishlist.findIndex((course) =>
+        course.equals(courseId)
+      );
+
+      if (cartIdIndex != -1) {
+        in_cart = true;
+      }
+      if (wishlistIdIndex != -1) {
+        in_wishlist = true;
+      }
+
       const responsePayLoad = {
         success: true,
         message: "Course Found",
         data: {
           course,
+          in_cart,
+          in_wishlist,
+        
         },
       };
       // let completedVideo = 0;
       if (courseIdIndex != -1) {
+        owned = true;
         const completedVideo =
           user.ownedCourse[courseIdIndex].completedVideo.length;
         responsePayLoad.data.completedVideo = completedVideo;
+        responsePayLoad.data.owned = owned;
       }
       res.json(responsePayLoad);
     } catch (e) {
