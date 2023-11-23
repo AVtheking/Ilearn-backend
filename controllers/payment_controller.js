@@ -2,7 +2,7 @@ const Razorpay = require("razorpay");
 require("dotenv").config();
 
 var crypto = require("crypto");
-const { ErrorHandler } = require("../middlewares");
+const { ErrorHandler } = require("../middlewares/error");
 const { User, Course } = require("../models");
 const { courseIdSchema } = require("../utils/validator");
 
