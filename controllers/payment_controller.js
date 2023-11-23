@@ -10,7 +10,7 @@ const paymentCtrl = {
   createOrderCart: async (req, res, next) => {
     try {
       const user = req.user;
-      if(user.cart.length==0){
+      if (user.cart.length == 0) {
         return next(new ErrorHandler(404, "No course in cart"));
       }
       const amount = req.params.amount;
@@ -34,10 +34,8 @@ const paymentCtrl = {
         createdAt: Date.now(),
         order: order,
       });
-      
-    }
-    catch (e) {
-      next(e)
+    } catch (e) {
+      next(e);
     }
   },
   checkPaymentCart: async (req, res, next) => {
@@ -69,14 +67,11 @@ const paymentCtrl = {
           message: "Payment successful",
         });
       } else {
-      
         return next(new ErrorHandler(402, "Payment failed"));
       }
+    } catch (e) {
+      next(e);
     }
-    catch (e) {
-      next(e)
-    }
-
   },
   createOrder: async (req, res, next) => {
     try {
@@ -92,7 +87,9 @@ const paymentCtrl = {
         course.courseId.equals(courseId)
       );
       if (courseIdIndex != -1) {
-        return next(new ErrorHandler(400, "You have already enrolled"));
+        return next(
+          new ErrorHandler(402, "You have already enrolled in this course")
+        );
       }
       const amount = course.price;
 
@@ -127,7 +124,6 @@ const paymentCtrl = {
 
   checkPayment: async (req, res, next) => {
     try {
-    
       const courseid = req.params.courseId;
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
@@ -162,7 +158,6 @@ const paymentCtrl = {
         return next(new ErrorHandler(400, "Payment failed"));
       }
     } catch (error) {
-     
       next(error);
     }
   },
