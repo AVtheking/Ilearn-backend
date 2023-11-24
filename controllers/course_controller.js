@@ -506,6 +506,7 @@ const courseCtrl = {
         },
       ]);
       const cummulative_rating = courses[0].avgRating;
+      console.log(cummulative_rating)
       const default_rating = 50;
       course.weightedRating =
         (Rating * totalStudents + default_rating * cummulative_rating) /
@@ -516,10 +517,31 @@ const courseCtrl = {
         rating: userRating,
         comment,
       };
+    
 
       course.reviews.push(review);
       await course.save();
-
+      const educator_courses = await Course.aggregate([
+        {
+          $match: {
+            createdBy: course.createdBy,
+            isPublished: true,
+            rating: { $exists: true, $ne: null },
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            avgRating: { $avg: "$weightedRating" },
+          },
+        },
+      ])
+      user.educator_rating = educator_courses[0].avgRating;
+      if (user.educator_rating >= 2.5) {
+        user.is_certified_educator=true
+      }
+      await user.save();
+      
       res.json({
         success: true,
         message: "Course rated successfully",
@@ -533,6 +555,7 @@ const courseCtrl = {
     try {
       const courseid = req.params.courseId;
       const path = req.query.path;
+
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
       const course = await Course.findById(courseId);

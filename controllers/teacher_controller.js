@@ -298,8 +298,14 @@ const teacherCtrl = {
       if (course.isPublished) {
         return next(new ErrorHandler(400, "Course is already published"));
       }
+      
 
       let user = req.user;
+      if (!user.is_certified_educator) {
+        if(price != 0){
+          return next(new ErrorHandler(400, "You are not a certified educator. You can't publish paid course"));
+        }
+      }
       user.createdCourse.push(courseId);
       user.save();
 
