@@ -141,28 +141,12 @@ const paymentCtrl = {
       next(e);
     }
   },
-  createOrder: async (req, res, next) => {
+  rechargeWallet: async (req, res, next) => {
     try {
-      const courseid = req.params.courseId;
-      const result = await courseIdSchema.validateAsync({ params: courseid });
-      const courseId = result.params;
-      const course = await Course.findById(courseId);
-      if (!course) {
-        return next(new ErrorHandler(400, "No course found"));
-      }
-      const user = req.user;
-      const courseIdIndex = user.ownedCourse.findIndex((course) =>
-        course.courseId.equals(courseId)
-      );
-      if (course.createdBy.equals(user._id)) {
-        return next(new ErrorHandler(400, "You cannot buy your own course"));
-      }
-      if (courseIdIndex != -1) {
-        return next(
-          new ErrorHandler(402, "You have already enrolled in this course")
-        );
-      }
-      const amount = course.price;
+     
+      // const user = req.user;
+      const amount = req.params.amount;
+
 
       const razorpayInstance = new Razorpay({
         key_id: process.env.KEY_ID,
@@ -177,7 +161,7 @@ const paymentCtrl = {
       };
 
       const order = await razorpayInstance.orders.create(options);
-      //   console.log(order);
+    
       return res.json({
         success: true,
         message: "Order Created",
@@ -188,7 +172,7 @@ const paymentCtrl = {
         order: order,
       });
     } catch (error) {
-      //   console.log(error);
+    
       next(error);
     }
   },
