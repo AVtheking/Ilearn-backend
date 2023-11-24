@@ -22,14 +22,10 @@ const resolutions = [
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
     try {
-      const { email } = req.body;
+      const user = req.user;
 
-      await User.findOneAndUpdate(
-        {
-          email,
-        },
-        { role: "teacher" }
-      );
+      await User.findByIdAndUpdate(user._id, { role: "teacher" });
+    
       res.json({
         success: "true",
         message: "You have successfully become educator",
@@ -258,7 +254,7 @@ const teacherCtrl = {
         note: noteFilePath,
       });
       course.duration += du;
-    
+
       course = await course.save();
 
       res.json({
@@ -288,7 +284,7 @@ const teacherCtrl = {
       const courseId = result.params;
 
       const result2 = await publishCourseSchema.validateAsync(req.body);
-   
+
       const { price, duration, category } = result2;
       let course = await Course.findById(courseId);
       if (!course) {

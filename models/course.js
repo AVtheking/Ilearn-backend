@@ -31,7 +31,6 @@ const courseSchema = new mongoose.Schema(
         },
       },
     ],
-  
 
     category: {
       type: String,
@@ -74,6 +73,10 @@ const courseSchema = new mongoose.Schema(
       default: false,
     },
     reviews: [reviewSchema],
+    weightedRating: {
+      type: String,
+      
+    },
   },
   {
     timestamps: true,

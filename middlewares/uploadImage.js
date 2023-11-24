@@ -15,6 +15,16 @@ const imagestorage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname));
   },
 });
+const imageFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+
+  }
+  else {
+    cb(new Error("Only jpeg, jpg and png format allowed"));
+  }
+}
 
 const uploadImage = multer({
   storage: imagestorage,

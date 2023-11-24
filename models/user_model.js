@@ -80,6 +80,14 @@ const userSchema = new mongoose.Schema({
   wallet: {
     type: Number,
     default: 0,
+  },
+  educator_rating: {
+    type: Number,
+    default: 0,
+  },
+  is_certified_educator: {
+    type: Boolean,
+    default: false,
   }
 });
 userSchema.path("createdCourse").default([]);

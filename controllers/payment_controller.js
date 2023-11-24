@@ -62,7 +62,6 @@ const paymentCtrl = {
         await Course.findByIdAndUpdate(courseId, {
           $inc: { totalStudents: 1 },
         });
-        
       }
       user.wallet -= amount;
       user.cart = [];
@@ -70,7 +69,7 @@ const paymentCtrl = {
       res.json({
         success: true,
         message: "Payment successful",
-      })
+      });
     } catch (e) {
       next(e);
     }
@@ -141,12 +140,10 @@ const paymentCtrl = {
       next(e);
     }
   },
-  rechargeWallet: async (req, res, next) => {
+  createOrder: async (req, res, next) => {
     try {
-     
       // const user = req.user;
       const amount = req.params.amount;
-
 
       const razorpayInstance = new Razorpay({
         key_id: process.env.KEY_ID,
@@ -161,7 +158,7 @@ const paymentCtrl = {
       };
 
       const order = await razorpayInstance.orders.create(options);
-    
+
       return res.json({
         success: true,
         message: "Order Created",
@@ -172,7 +169,6 @@ const paymentCtrl = {
         order: order,
       });
     } catch (error) {
-    
       next(error);
     }
   },

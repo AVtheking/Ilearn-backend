@@ -143,7 +143,6 @@ const courseCtrl = {
           course,
           in_cart,
           in_wishlist,
-        
         },
       };
       // let completedVideo = 0;
@@ -462,11 +461,11 @@ const courseCtrl = {
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
       );
-      if (courseIdIndex == -1) {
-        return next(
-          new ErrorHandler(400, "You have not enrolled in this course")
-        );
-      }
+      // if (courseIdIndex == -1) {
+      //   return next(
+      //     new ErrorHandler(400, "You have not enrolled in this course")
+      //   );
+      // }
 
       const reviewIndex = course.reviews.findIndex((review) =>
         review.user.equals(req.user._id)
@@ -486,8 +485,31 @@ const courseCtrl = {
         totalWeightedRating += rating * count;
         totalStudents += count;
       }
-      const weightedRating = totalWeightedRating / totalStudents;
-      course.rating = weightedRating;
+      if (totalStudents == 0) {
+        course.weightedRating = 0;
+      }
+
+      const Rating = totalWeightedRating / totalStudents;
+      course.rating = Rating;
+      const courses = await Course.aggregate([
+        {
+          $match: {
+            isPublished: true,
+            rating: { $exists: true, $ne: null },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            avgRating: { $avg: "$rating" },
+          },
+        },
+      ]);
+      const cummulative_rating = courses[0].avgRating;
+      const default_rating = 50;
+      course.weightedRating =
+        (Rating * totalStudents + default_rating * cummulative_rating) /
+        (totalStudents + default_rating);
 
       const review = {
         user: req.user._id,
