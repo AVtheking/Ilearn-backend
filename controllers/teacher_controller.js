@@ -300,6 +300,7 @@ const teacherCtrl = {
       if (course.isPublished) {
         return next(new ErrorHandler(400, "Course is already published"));
       }
+      
 
       let user = req.user;
       if (!user.is_certified_educator) {
