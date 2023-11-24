@@ -7,6 +7,74 @@ const { User, Course } = require("../models");
 const { courseIdSchema } = require("../utils/validator");
 
 const paymentCtrl = {
+  buycourse: async (req, res, next) => {
+    try {
+      const user = req.user;
+      const courseId = req.params.courseId;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler(400, "No course found"));
+      }
+      const courseIdIndex = user.ownedCourse.findIndex((course) =>
+        course.courseId.equals(courseId)
+      );
+      if (course.createdBy.equals(user._id)) {
+        return next(new ErrorHandler(400, "You cannot buy your own course"));
+      }
+      if (courseIdIndex != -1) {
+        return next(
+          new ErrorHandler(402, "You have already enrolled in this course")
+        );
+      }
+      const amount = course.price;
+      if (user.wallet < amount) {
+        return next(new ErrorHandler(402, "Insufficient balance"));
+      }
+      user.wallet -= amount;
+      user.ownedCourse.push({ courseId: courseId });
+      await user.save();
+      await Course.findByIdAndUpdate(courseId, {
+        $inc: { totalStudents: 1 },
+      });
+      return res.json({
+        success: true,
+        message: "Payment successful",
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  buyCourseCart: async (req, res, next) => {
+    try {
+      const user = req.user;
+      const amount = req.params.amount;
+      if (user.cart.length == 0) {
+        return next(new ErrorHandler(404, "No course in cart"));
+      }
+      if (user.wallet < amount) {
+        return next(new ErrorHandler(402, "Insufficient balance"));
+      }
+      for (let i = 0; i < user.cart.length; i++) {
+        const courseId = user.cart[i];
+        // const course = await Course.findById(courseId);
+
+        user.ownedCourse.push({ courseId: courseId });
+        await Course.findByIdAndUpdate(courseId, {
+          $inc: { totalStudents: 1 },
+        });
+        
+      }
+      user.wallet -= amount;
+      user.cart = [];
+      await user.save();
+      res.json({
+        success: true,
+        message: "Payment successful",
+      })
+    } catch (e) {
+      next(e);
+    }
+  },
   createOrderCart: async (req, res, next) => {
     try {
       const user = req.user;
@@ -86,6 +154,9 @@ const paymentCtrl = {
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
       );
+      if (course.createdBy.equals(user._id)) {
+        return next(new ErrorHandler(400, "You cannot buy your own course"));
+      }
       if (courseIdIndex != -1) {
         return next(
           new ErrorHandler(402, "You have already enrolled in this course")

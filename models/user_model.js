@@ -77,6 +77,10 @@ const userSchema = new mongoose.Schema({
       ref: "Course",
     },
   ],
+  wallet: {
+    type: Number,
+    default: 0,
+  }
 });
 userSchema.path("createdCourse").default([]);
 userSchema.path("ownedCourse").default([]);

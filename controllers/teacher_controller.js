@@ -132,7 +132,9 @@ const teacherCtrl = {
     try {
       const result = await CourseSchema.validateAsync(req.body);
       const { title, description, category } = result;
-
+      if (!req.file) {
+        return next(new ErrorHandler(400, "Please upload a thumbnail file"));
+      }
       const existingTitle = await Course.findOne({ title });
       if (existingTitle) {
         fs.unlinkSync("public/thumbnail" + "/" + req.file.filename);
