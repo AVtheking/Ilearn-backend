@@ -254,7 +254,7 @@ const authCtrl = {
         shortId: uid,
         password: hashedPassword,
       });
-      await redisClient.del("userdata");
+      // await redisClient.del("userdata");
       res.json({
         success: true,
         message: "password has been changed successfully",
