@@ -15,7 +15,7 @@ const {
 const createConversionWorker = require("../utils/videoConverter");
 const resolutions = [
   { name: "144p", width: 256, height: 144 },
-  { name: "360p", width: 640, height: 360 },
+  // { name: "360p", width: 640, height: 360 },
   // { name: "720p", width: 1280, height: 720 },
 ];
 
