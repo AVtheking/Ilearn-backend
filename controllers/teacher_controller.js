@@ -22,17 +22,16 @@ const resolutions = [
 const teacherCtrl = {
   becomeTeacher: async (req, res, next) => {
     try {
-      const { email } = req.body;
+      const user = req.user;
 
-      await User.findOneAndUpdate(
-        {
-          email,
-        },
-        { role: "teacher" }
-      );
+      await User.findByIdAndUpdate(user._id, { role: "teacher" });
+
       res.json({
         success: "true",
         message: "You have successfully become educator",
+        data: {
+          user,
+        },
       });
     } catch (error) {
       next(error);
@@ -40,16 +39,14 @@ const teacherCtrl = {
   },
   becomeStudent: async (req, res, next) => {
     try {
-      const { email } = req.body;
-      await User.findOneAndUpdate(
-        {
-          email,
-        },
-        { role: "student" }
-      );
+      const user = req.user;
+      await User.findOneAndUpdate(user._id, { role: "student" });
       res.json({
         success: "true",
         message: "You have successfully became student",
+        data: {
+          user,
+        },
       });
     } catch (e) {
       next(e);
@@ -132,7 +129,9 @@ const teacherCtrl = {
     try {
       const result = await CourseSchema.validateAsync(req.body);
       const { title, description, category } = result;
-
+      if (!req.file) {
+        return next(new ErrorHandler(400, "Please upload a thumbnail file"));
+      }
       const existingTitle = await Course.findOne({ title });
       if (existingTitle) {
         fs.unlinkSync("public/thumbnail" + "/" + req.file.filename);
@@ -171,7 +170,6 @@ const teacherCtrl = {
       inputFileName;
     try {
       const courseid = req.params.courseId;
-      // console.log(courseid);
 
       const result = await courseIdSchema.validateAsync({ params: courseid });
       const courseId = result.params;
@@ -186,15 +184,14 @@ const teacherCtrl = {
         noteFilePath = "public/course_notes" + "/" + notesfile[0].filename;
       }
       if (!videofile) {
-        if (noteFilePath != null) {
-          fs.unlinkSync(noteFilePath);
-        }
         return next(new ErrorHandler(400, "Please upload a video file"));
       }
       videoFilePath = "public/course_videos" + "/" + videofile[0].filename;
 
       if (!course) {
-        fs.unlinkSync(noteFilePath);
+        if (noteFilePath != null) {
+          fs.unlinkSync(noteFilePath);
+        }
         fs.unlinkSync(videoFilePath);
         return next(
           new ErrorHandler(
@@ -205,17 +202,20 @@ const teacherCtrl = {
       }
 
       if (!course.createdBy.equals(req.user._id)) {
-        fs.unlinkSync(noteFilePath);
+        if (noteFilePath != null) {
+          fs.unlinkSync(noteFilePath);
+        }
         fs.unlinkSync(videoFilePath);
         return next(new ErrorHandler(400, "You are not the creater of course"));
       }
       if (course.isPublished) {
-        fs.unlinkSync(noteFilePath);
+        if (noteFilePath != null) {
+          fs.unlinkSync(noteFilePath);
+        }
         fs.unlinkSync(videoFilePath);
         return next(new ErrorHandler(400, "Course is already published"));
       }
 
-      // course.notes.push(noteFilePath);
 
       //Video Conversion using worker threads
       const conversionPromise = resolutions.map((resolution) => {
@@ -256,7 +256,7 @@ const teacherCtrl = {
         note: noteFilePath,
       });
       course.duration += du;
-    
+
       course = await course.save();
 
       res.json({
@@ -286,7 +286,7 @@ const teacherCtrl = {
       const courseId = result.params;
 
       const result2 = await publishCourseSchema.validateAsync(req.body);
-   
+
       const { price, duration, category } = result2;
       let course = await Course.findById(courseId);
       if (!course) {
@@ -302,6 +302,16 @@ const teacherCtrl = {
       }
 
       let user = req.user;
+      if (!user.is_certified_educator) {
+        if (price != 0) {
+          return next(
+            new ErrorHandler(
+              400,
+              "You are not a certified educator. You can't publish paid course"
+            )
+          );
+        }
+      }
       user.createdCourse.push(courseId);
       user.save();
 
@@ -444,7 +454,9 @@ const teacherCtrl = {
     let videoFilePath, inputFilePath, inputFileName;
     try {
       const courseId = req.params.courseId;
-
+      if (!req.file) {
+        return next(new ErrorHandler(400, "Please upload a video file"));
+      }
       const result = await videoSchema.validateAsync(req.body);
       const videoTitle = result.videoTitle;
       videoFilePath = "public/course_videos" + "/" + req.file.filename;
@@ -514,22 +526,28 @@ const teacherCtrl = {
       if (!course.createdBy.equals(req.user._id)) {
         return next(new ErrorHandler(400, "You are not creater of the course"));
       }
-      const videoIndex = course.videos.indexOf(lectureId);
+      const videoIndex = course.videos.findIndex((video) => {
+        return video.video.equals(lectureId);
+      });
       if (videoIndex == -1) {
         return next(new ErrorHandler(400, "Lecture not found in the course"));
       }
-
+      const note = course.videos[videoIndex].note;
+      if (note != null) {
+        fs.unlinkSync(note);
+      }
       const video = await Video.findById(lectureId);
 
       if (video) {
-        await course.videos.splice(videoIndex, 1);
-        await course.save();
+        await Course.findByIdAndUpdate(courseId, {
+          $pull: { videos: { video: lectureId } },
+        });
 
-        await Video.findByIdAndDelete(lectureId);
         fs.unlinkSync(video.videoUrl);
         fs.unlinkSync(video.videoUrl_144p);
         fs.unlinkSync(video.videoUrl_360p);
         fs.unlinkSync(video.videoUrl_720p);
+        await Video.findByIdAndDelete(lectureId);
       }
 
       res.json({
