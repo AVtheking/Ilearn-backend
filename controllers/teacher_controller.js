@@ -25,10 +25,13 @@ const teacherCtrl = {
       const user = req.user;
 
       await User.findByIdAndUpdate(user._id, { role: "teacher" });
-    
+
       res.json({
         success: "true",
         message: "You have successfully become educator",
+        data: {
+          user,
+        },
       });
     } catch (error) {
       next(error);
@@ -36,16 +39,14 @@ const teacherCtrl = {
   },
   becomeStudent: async (req, res, next) => {
     try {
-      const { email } = req.body;
-      await User.findOneAndUpdate(
-        {
-          email,
-        },
-        { role: "student" }
-      );
+      const user = req.user;
+      await User.findOneAndUpdate(user._id, { role: "student" });
       res.json({
         success: "true",
         message: "You have successfully became student",
+        data: {
+          user,
+        },
       });
     } catch (e) {
       next(e);
@@ -298,12 +299,16 @@ const teacherCtrl = {
       if (course.isPublished) {
         return next(new ErrorHandler(400, "Course is already published"));
       }
-      
 
       let user = req.user;
       if (!user.is_certified_educator) {
-        if(price != 0){
-          return next(new ErrorHandler(400, "You are not a certified educator. You can't publish paid course"));
+        if (price != 0) {
+          return next(
+            new ErrorHandler(
+              400,
+              "You are not a certified educator. You can't publish paid course"
+            )
+          );
         }
       }
       user.createdCourse.push(courseId);

@@ -536,12 +536,13 @@ const courseCtrl = {
           },
         },
       ])
+      console.log(educator_courses[0].avgRating)
       user.educator_rating = educator_courses[0].avgRating;
       if (user.educator_rating >= 2.5) {
         user.is_certified_educator=true
       }
       await user.save();
-      
+
       res.json({
         success: true,
         message: "Course rated successfully",
