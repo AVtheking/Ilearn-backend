@@ -11,7 +11,6 @@ if (!fs.existsSync(Videodirectory)) {
   fs.mkdirSync(Videodirectory);
 }
 
-
 if (!fs.existsSync(NotesDirectory)) {
   fs.mkdirSync(NotesDirectory);
 }
@@ -42,7 +41,7 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     if (file.originalname.match(/\.(mp4|MPEG-4|mkv)$/)) {
       cb(null, true);
-    } else if (file.originalname.match(/\.(pdf)$/)) {
+    }  else if (file.originalname.match(/\.(pdf|ppt|jpeg|png|word|pptx)$/i)) {
       cb(null, true);
     } else {
       cb(new ErrorHandler(400, "Invalid file type"), false);

@@ -208,13 +208,13 @@ const teacherCtrl = {
         fs.unlinkSync(videoFilePath);
         return next(new ErrorHandler(400, "You are not the creater of course"));
       }
-      if (course.isPublished) {
-        if (noteFilePath != null) {
-          fs.unlinkSync(noteFilePath);
-        }
-        fs.unlinkSync(videoFilePath);
-        return next(new ErrorHandler(400, "Course is already published"));
-      }
+      // if (course.isPublished) {
+      //   if (noteFilePath != null) {
+      //     fs.unlinkSync(noteFilePath);
+      //   }
+      //   fs.unlinkSync(videoFilePath);
+      //   return next(new ErrorHandler(400, "Course is already published"));
+      // }
 
 
       //Video Conversion using worker threads
@@ -450,69 +450,69 @@ const teacherCtrl = {
       next(e);
     }
   },
-  addlecture: async (req, res, next) => {
-    let videoFilePath, inputFilePath, inputFileName;
-    try {
-      const courseId = req.params.courseId;
-      if (!req.file) {
-        return next(new ErrorHandler(400, "Please upload a video file"));
-      }
-      const result = await videoSchema.validateAsync(req.body);
-      const videoTitle = result.videoTitle;
-      videoFilePath = "public/course_videos" + "/" + req.file.filename;
-      let course = await Course.findById(courseId);
-      if (!course) {
-        fs.unlinkSync(videoFilePath);
-        return next(new ErrorHandler(404, "Course not found"));
-      }
-      if (!course.createdBy.equals(req.user._id)) {
-        fs.unlinkSync(videoFilePath);
-        return next(
-          new ErrorHandler(400, "You are not the creater of the course")
-        );
-      }
-      const conversionPromise = resolutions.map((resolution) => {
-        inputFilePath = videoFilePath;
-        inputFileName = path.basename(
-          inputFilePath,
-          path.extname(inputFilePath)
-        );
-        const outputPath = `public/course_videos/${inputFileName}-${
-          resolution.name
-        }${path.extname(inputFilePath)}`;
-        return createConversionWorker(resolution, inputFilePath, outputPath);
-      });
-      await Promise.all(conversionPromise);
-      console.log("Video conversion completed");
-      const du = await getVideoDurationInSeconds(videoFilePath);
-      let video = new Video({
-        videoTitle,
-        videoUrl: videoFilePath,
-        videoUrl_144p: `public/course_videos/${inputFileName}-144p${path.extname(
-          inputFilePath
-        )}`,
-        videoUrl_360p: `public/course_videos/${inputFileName}-360p${path.extname(
-          inputFilePath
-        )}`,
-        videoUrl_720p: `public/course_videos/${inputFileName}-720p${path.extname(
-          inputFilePath
-        )}`,
-        videoDuration: du,
-      });
-      video = await video.save();
-      course.videos.push(video._id);
-      course = await course.save();
-      res.json({
-        success: true,
-        message: "Lecture added successfully",
-      });
-    } catch (e) {
-      if (videoFilePath) {
-        fs.unlinkSync(videoFilePath);
-      }
-      next(e);
-    }
-  },
+  // addlecture: async (req, res, next) => {
+  //   let videoFilePath, inputFilePath, inputFileName;
+  //   try {
+  //     const courseId = req.params.courseId;
+  //     if (!req.file) {
+  //       return next(new ErrorHandler(400, "Please upload a video file"));
+  //     }
+  //     const result = await videoSchema.validateAsync(req.body);
+  //     const videoTitle = result.videoTitle;
+  //     videoFilePath = "public/course_videos" + "/" + req.file.filename;
+  //     let course = await Course.findById(courseId);
+  //     if (!course) {
+  //       fs.unlinkSync(videoFilePath);
+  //       return next(new ErrorHandler(404, "Course not found"));
+  //     }
+  //     if (!course.createdBy.equals(req.user._id)) {
+  //       fs.unlinkSync(videoFilePath);
+  //       return next(
+  //         new ErrorHandler(400, "You are not the creater of the course")
+  //       );
+  //     }
+  //     const conversionPromise = resolutions.map((resolution) => {
+  //       inputFilePath = videoFilePath;
+  //       inputFileName = path.basename(
+  //         inputFilePath,
+  //         path.extname(inputFilePath)
+  //       );
+  //       const outputPath = `public/course_videos/${inputFileName}-${
+  //         resolution.name
+  //       }${path.extname(inputFilePath)}`;
+  //       return createConversionWorker(resolution, inputFilePath, outputPath);
+  //     });
+  //     await Promise.all(conversionPromise);
+  //     console.log("Video conversion completed");
+  //     const du = await getVideoDurationInSeconds(videoFilePath);
+  //     let video = new Video({
+  //       videoTitle,
+  //       videoUrl: videoFilePath,
+  //       videoUrl_144p: `public/course_videos/${inputFileName}-144p${path.extname(
+  //         inputFilePath
+  //       )}`,
+  //       videoUrl_360p: `public/course_videos/${inputFileName}-360p${path.extname(
+  //         inputFilePath
+  //       )}`,
+  //       videoUrl_720p: `public/course_videos/${inputFileName}-720p${path.extname(
+  //         inputFilePath
+  //       )}`,
+  //       videoDuration: du,
+  //     });
+  //     video = await video.save();
+  //     course.videos.push(video._id);
+  //     course = await course.save();
+  //     res.json({
+  //       success: true,
+  //       message: "Lecture added successfully",
+  //     });
+  //   } catch (e) {
+  //     if (videoFilePath) {
+  //       fs.unlinkSync(videoFilePath);
+  //     }
+  //     next(e);
+  //   }
+  // },
   removeLecture: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;

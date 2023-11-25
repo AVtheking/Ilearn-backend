@@ -5,7 +5,7 @@ const {auth,uploadVideo, uploadImage, uploadNotes} = require("../middlewares");
 
 teacherRouter.patch("/become-instructor", auth, teacherCtrl.becomeTeacher);
 teacherRouter.patch("/become-student", auth, teacherCtrl.becomeStudent);
-teacherRouter.patch("/add-lecture/:courseId", auth, uploadVideo, teacherCtrl.addlecture)
+// teacherRouter.patch("/add-lecture/:courseId", auth, uploadVideo, teacherCtrl.addlecture)
 teacherRouter.patch("/change-thumbnail/:courseId", auth, uploadImage, teacherCtrl.changeThumbnail)
 teacherRouter.patch("/update-course/:courseId", auth, uploadImage, teacherCtrl.updateCourse)
 
