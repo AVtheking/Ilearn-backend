@@ -1,4 +1,4 @@
-const { Course, Category, User } = require("../models");
+const { Course, Category, User, PopularSearch } = require("../models");
 const { ErrorHandler } = require("../middlewares/error");
 // const redis = require("redis");
 const {
@@ -7,7 +7,7 @@ const {
   editReviewSchema,
   deleteReviewSchema,
 } = require("../utils/validator");
-const { count } = require("../models/comment");
+
 //const Enrollment = require('../models/Enrollment');
 
 // const redisClient = redis.createClient();
@@ -317,6 +317,24 @@ const courseCtrl = {
       next(e);
     }
   },
+  getPopularSearch: async (req, res, next) => {
+    try {
+      const popularSearch = await PopularSearch.find()
+        .sort({ count: -1 })
+        .select({ search: 1, _id: 0 })
+        .limit(5);
+      
+      res.json({
+        success: true,
+        message: "List of popular searches",
+        data: {
+          popularSearch,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
 
   searchCourses: async (req, res, next) => {
     try {
@@ -325,6 +343,13 @@ const courseCtrl = {
       const startIndex = (page - 1) * pageSize;
 
       const searchquery = req.query.coursetitle;
+      await PopularSearch.findOneAndUpdate(
+        {
+          search: searchquery,
+        },
+        { $inc: { count: 1 } },
+        { upsert: true }
+      );
       const result = await Course.aggregate([
         {
           $search: {
@@ -357,8 +382,11 @@ const courseCtrl = {
         },
       ]);
       const searchResults = result[0].searchResults;
-      const totalCount = result[0].totalCount[0].count;
+      const totalCount = result[0].totalCount[0]
+        ? result[0].totalCount[0].count
+        : 0;
 
+      // console.log(result[0].totalCount[0].count);
       const totalPages = Math.ceil(totalCount / pageSize);
 
       res.json({
@@ -381,7 +409,7 @@ const courseCtrl = {
 
       const coursesCount = await Course.countDocuments({
         isPublished: true,
-        rating: { $gte: 4.2 },
+        weightedRating: { $gte: 4.2 },
       });
 
       const totalPages = Math.ceil(coursesCount / pageSize);
@@ -389,11 +417,11 @@ const courseCtrl = {
         {
           $match: {
             isPublished: true,
-            rating: { $gte: 4.2 },
+            rating: { $gte: 4 },
           },
         },
         {
-          $sort: { rating: -1 },
+          $sort: { weightedRating: -1 },
         },
         {
           $skip: startIndex,
@@ -426,6 +454,7 @@ const courseCtrl = {
             thumbnail: 1,
             createdAt: 1,
             updatedAt: 1,
+            weightedRating:1,
             createdBy: { _id: 1, username: 1, name: 1 },
           },
         },
@@ -458,14 +487,14 @@ const courseCtrl = {
         return next(new ErrorHandler(400, "Course is not published yet"));
       }
       const user = req.user;
-      const courseIdIndex = user.ownedCourse.findIndex((course) =>
-        course.courseId.equals(courseId)
-      );
-      if (courseIdIndex == -1) {
-        return next(
-          new ErrorHandler(400, "You have not enrolled in this course")
-        );
-      }
+      // const courseIdIndex = user.ownedCourse.findIndex((course) =>
+      //   course.courseId.equals(courseId)
+      // );
+      // if (courseIdIndex == -1) {
+      //   return next(
+      //     new ErrorHandler(400, "You have not enrolled in this course")
+      //   );
+      // }
 
       const reviewIndex = course.reviews.findIndex((review) =>
         review.user.equals(req.user._id)
@@ -506,7 +535,7 @@ const courseCtrl = {
         },
       ]);
       const cummulative_rating = courses[0].avgRating;
-      console.log(cummulative_rating)
+      // console.log(cummulative_rating);
       const default_rating = 50;
       course.weightedRating =
         (Rating * totalStudents + default_rating * cummulative_rating) /
@@ -517,7 +546,6 @@ const courseCtrl = {
         rating: userRating,
         comment,
       };
-    
 
       course.reviews.push(review);
       await course.save();
@@ -527,7 +555,7 @@ const courseCtrl = {
             createdBy: course.createdBy,
             isPublished: true,
             rating: { $exists: true, $ne: null },
-          }
+          },
         },
         {
           $group: {
@@ -535,11 +563,11 @@ const courseCtrl = {
             avgRating: { $avg: "$weightedRating" },
           },
         },
-      ])
-      console.log(educator_courses[0].avgRating)
+      ]);
+      console.log(educator_courses[0].avgRating);
       user.educator_rating = educator_courses[0].avgRating;
       if (user.educator_rating >= 2.5) {
-        user.is_certified_educator=true
+        user.is_certified_educator = true;
       }
       await user.save();
 

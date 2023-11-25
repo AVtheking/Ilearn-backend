@@ -74,8 +74,8 @@ const courseSchema = new mongoose.Schema(
     },
     reviews: [reviewSchema],
     weightedRating: {
-      type: String,
-      
+      type: Number,
+      default: 0,
     },
   },
   {
