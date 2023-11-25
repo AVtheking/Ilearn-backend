@@ -1,6 +1,6 @@
 const { ErrorHandler } = require("../middlewares/error");
 const { User, Course } = require("../models");
-const { $where } = require("../models/comment");
+const fs = require("fs");
 const {
   profileSchema,
   courseIdSchema,
@@ -10,7 +10,11 @@ const {
 const userCtrl = {
   uploadProfilePicture: async (req, res, next) => {
     try {
-      const user = await User.findById(req.user._id);
+      if (!req.file) return next(new ErrorHandler(400, "Please upload a file"));
+      const user = req.user;
+      if (user.profileimg != null) {
+        fs.unlinkSync("public" + "/" + user.profileimg);
+      }
       user.profileimg = `thumbnail` + "/" + req.file.filename;
       await user.save();
       res.json({
@@ -21,10 +25,29 @@ const userCtrl = {
         },
       });
     } catch (error) {
-      fs.unlinksync("public/thumbnail" + "/" + req.file.filename);
+      fs.unlinkSync("public/thumbnail" + "/" + req.file.filename);
       next(error);
     }
   },
+  deleteProfilePicture: async (req, res, next) => {
+    try {
+      const user = req.user;
+      const path = user.profileimg;
+      user.profileimg = null;
+      await user.save();
+      fs.unlinkSync("public" + "/" + path);
+      res.json({
+        success: true,
+        message: "Profile picture deleted successfully",
+        data: {
+          user,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+
   updateProfile: async (req, res, next) => {
     try {
       const result = await profileSchema.validateAsync(req.body);
@@ -320,8 +343,6 @@ const userCtrl = {
             foreignField: "_id",
             as: "video",
           },
-          
-
         },
         {
           $unwind: "$course",
@@ -338,7 +359,7 @@ const userCtrl = {
             rating: "$course.rating",
             duration: "$course.duration",
             completedVideo: { $size: "$ownedCourse.completedVideo" },
-            totalVideos: { $size: "$course.videos" }, 
+            totalVideos: { $size: "$course.videos" },
           },
         },
       ]);
@@ -354,7 +375,7 @@ const userCtrl = {
   getUserById: async (req, res, next) => {
     try {
       const userid = req.params.userId;
-     
+
       const result = await userIdSchema.validateAsync({ userId: userid });
       const userId = result.userId;
       const user = await User.findById(userId, {

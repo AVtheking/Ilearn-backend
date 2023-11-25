@@ -16,7 +16,8 @@ userRouter.post("/add-wishlist/:courseId", auth, userCtrl.addToWishlist);
 // userRouter.post("/add-to-oc/:courseId/lecture/:lectureId", auth, userCtrl.addToOC);
 // userRouter.post("/add-lecture-oc/:courseId/lecture/:lectureId", auth, userCtrl.addlecture);
 
-userRouter.delete(  "/delete-cart/:courseId",auth,userCtrl.deleteCourseFromCart);
+userRouter.delete("/delete-cart/:courseId", auth, userCtrl.deleteCourseFromCart);
+userRouter.delete("/delete-profileImg", auth, userCtrl.deleteProfilePicture);
 userRouter.delete("/delete-wishlist/:courseId", auth, userCtrl.deleteCourseFromWishlist);
 
 userRouter.patch('/update-profileImg', auth, uploadImage, userCtrl.uploadProfilePicture);
