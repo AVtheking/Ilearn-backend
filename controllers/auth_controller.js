@@ -265,8 +265,14 @@ const authCtrl = {
   },
   getUserData: async (req, res, next) => {
     try {
-      const user = await User.findById(req.user);
-      res.json({ user });
+      const user = req.user;
+      res.json({
+        success: true,
+        message: "User data fetched successfully",
+        data: {
+          user,
+        },
+      });
     } catch (e) {
       next(e);
     }
