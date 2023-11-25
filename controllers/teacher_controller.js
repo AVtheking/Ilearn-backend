@@ -318,7 +318,7 @@ const teacherCtrl = {
       course.isPublished = true;
       course.price = price;
       course.duration = duration;
-      course.preview = course.videos[0].video;
+      course.preview = course.videos[0]? course.videos[0].video : null;
       await course.save();
 
       let existingCategory = await Category.findOne({ name: category });
