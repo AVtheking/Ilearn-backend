@@ -461,11 +461,11 @@ const courseCtrl = {
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
       );
-      // if (courseIdIndex == -1) {
-      //   return next(
-      //     new ErrorHandler(400, "You have not enrolled in this course")
-      //   );
-      // }
+      if (courseIdIndex == -1) {
+        return next(
+          new ErrorHandler(400, "You have not enrolled in this course")
+        );
+      }
 
       const reviewIndex = course.reviews.findIndex((review) =>
         review.user.equals(req.user._id)
