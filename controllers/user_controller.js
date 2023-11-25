@@ -35,7 +35,9 @@ const userCtrl = {
       const path = user.profileimg;
       user.profileimg = null;
       await user.save();
-      fs.unlinkSync("public" + "/" + path);
+      if (path != null) {
+        fs.unlinkSync("public" + "/" + path);
+      }
       res.json({
         success: true,
         message: "Profile picture deleted successfully",
