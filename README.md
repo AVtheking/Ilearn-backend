@@ -2,6 +2,8 @@
 
 A Nodejs based backend system  using MongoDB,NodeJS,Express,Mongoose, and deployed on aws.
 With Both a Flutter Based App and a ReactJS Website as Frontend:-
+- [ReactJS Website](https://github.com/abhinandnn/udemy-clone-frontend)
+- [Flutter Application](https://github.com/Pudv95/iLearn)
 
 ## FEATURES
 
@@ -64,7 +66,26 @@ You can access the endpoints from your web browser following this url
 ```url
 http://127.0.0.1:PORT
 ```
+## 🛣Roadmap Project 
 
+
+
+- [ ] *Task 1: Implement Google OAuth*
+  - Integrate Google OAuth for a seamless and secure login experience.
+  - Allow users to sign in with their Google accounts.
+  - Enhance user authentication and access control.
+
+- [ ] *Task 2: Group Chat Feature*
+  - Enable users to discuss doubts in real-time.
+
+- [ ] *Task 3: Live Streaming*
+  - Implement a live streaming feature enabling teacher to live stream their courses.
+  - It would be able to handle good amount of use in a stream
+
+- [ ] *Task 4: Bug Fixes and Optimization*
+  - Address reported bugs and issues.
+  - Optimize the performance of the application.
+  - Conduct thorough testing to e
 
 
 
