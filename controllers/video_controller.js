@@ -29,7 +29,7 @@ const videoCtrl = {
       }
       const videoPath = req.query.path;
       const videoSize = fs.statSync(videoPath).size;
-      const CHUNK_SIZE = 10 ** 6;
+      const CHUNK_SIZE = 10 ** 4;
       const start = Number(range.replace(/\D/g, ""));
       const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
       const remainingTime = Math.floor(

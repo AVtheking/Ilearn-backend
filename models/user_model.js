@@ -88,9 +88,10 @@ const userSchema = new mongoose.Schema({
   is_certified_educator: {
     type: Boolean,
     default: false,
-  }
+  },
 });
-userSchema.path("createdCourse").default([]);
-userSchema.path("ownedCourse").default([]);
+userSchema.path("createdCourse").default(() => []);
+userSchema.path("ownedCourse").default(() => []);
+
 const User = new mongoose.model("User", userSchema);
 module.exports = User;
