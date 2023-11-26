@@ -23,7 +23,7 @@ With Both a Flutter Based App and a ReactJS Website as Frontend:-
 1. Clone the repository:
 
 ```CMD
-git clone https://github.com/Archiehere/Foodora_Backend.git](https://github.com/AVtheking/Ilearn-backend)
+git clone https://github.com/AVtheking/Ilearn-backend
 ```
 To run the server, you need to have NodeJS installed on your machine. If you don't have it installed, you can follow the instructions [here](https://nodejs.org/en//) to install it.
 
