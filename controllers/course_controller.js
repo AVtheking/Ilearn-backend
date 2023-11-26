@@ -8,7 +8,7 @@ const {
   deleteReviewSchema,
 } = require("../utils/validator");
 
-//const Enrollment = require('../models/Enrollment');
+
 
 // const redisClient = redis.createClient();
 // redisClient.connect().catch(console.error);
@@ -157,7 +157,7 @@ const courseCtrl = {
           in_wishlist,
         },
       };
-      // let completedVideo = 0;
+     
       if (courseIdIndex != -1) {
         owned = true;
         const completedVideo =
@@ -393,7 +393,7 @@ const courseCtrl = {
         ? result[0].totalCount[0].count
         : 0;
 
-      // console.log(result[0].totalCount[0].count);
+      
       const totalPages = Math.ceil(totalCount / pageSize);
 
       res.json({
@@ -494,14 +494,7 @@ const courseCtrl = {
         return next(new ErrorHandler(400, "Course is not published yet"));
       }
       const user = req.user;
-      // const courseIdIndex = user.ownedCourse.findIndex((course) =>
-      //   course.courseId.equals(courseId)
-      // );
-      // if (courseIdIndex == -1) {
-      //   return next(
-      //     new ErrorHandler(400, "You have not enrolled in this course")
-      //   );
-      // }
+    
 
       const reviewIndex = course.reviews.findIndex((review) =>
         review.user.equals(req.user._id)
@@ -542,7 +535,7 @@ const courseCtrl = {
         },
       ]);
       const cummulative_rating = courses[0].avgRating;
-      // console.log(cummulative_rating);
+
       const default_rating = 50;
       course.weightedRating =
         (Rating * totalStudents + default_rating * cummulative_rating) /
@@ -571,7 +564,7 @@ const courseCtrl = {
           },
         },
       ]);
-      console.log(educator_courses[0].avgRating);
+     
       user.educator_rating = educator_courses[0].avgRating;
       if (user.educator_rating >= 2.5) {
         user.is_certified_educator = true;
@@ -581,6 +574,9 @@ const courseCtrl = {
       res.json({
         success: true,
         message: "Course rated successfully",
+        data: {
+          review
+        }
       });
     } catch (error) {
       next(error);

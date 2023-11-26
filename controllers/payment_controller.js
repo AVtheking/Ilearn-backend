@@ -69,7 +69,7 @@ const paymentCtrl = {
       }
       for (let i = 0; i < user.cart.length; i++) {
         const courseId = user.cart[i];
-        // const course = await Course.findById(courseId);
+  
         const course = await Course.findById(courseId);
         const createdBy = course.createdBy;
         const createrUser = await User.findById(createdBy);
@@ -91,75 +91,10 @@ const paymentCtrl = {
       next(e);
     }
   },
-  // createOrderCart: async (req, res, next) => {
-  //   try {
-  //     const user = req.user;
-  //     if (user.cart.length == 0) {
-  //       return next(new ErrorHandler(404, "No course in cart"));
-  //     }
-  //     const amount = req.params.amount;
-  //     const razorpayInstance = new Razorpay({
-  //       key_id: process.env.KEY_ID,
-  //       key_secret: process.env.KEY_SECRET,
-  //     });
-  //     const options = {
-  //       amount: amount * 100,
-  //       currency: "INR",
-  //       partial_payment: false,
-  //       payment_capture: 1,
-  //     };
-  //     const order = await razorpayInstance.orders.create(options);
-  //     return res.json({
-  //       success: true,
-  //       message: "Order Created",
-
-  //       order_id: order.id,
-  //       key_id: process.env.KEY_ID,
-  //       createdAt: Date.now(),
-  //       order: order,
-  //     });
-  //   } catch (e) {
-  //     next(e);
-  //   }
-  // },
-  // checkPaymentCart: async (req, res, next) => {
-  //   try {
-  //     body = req.body.order_id + "|" + req.body.payment_id;
-  //     var expectedSignature = crypto
-  //       .createHmac("sha256", process.env.KEY_SECRET)
-  //       .update(body.toString())
-  //       .digest("hex");
-
-  //     console.log("sig" + req.body.signature);
-  //     console.log("sig" + expectedSignature);
-  //     const user = req.user;
-  //     if (expectedSignature === req.body.signature) {
-  //       for (let i = 0; i < user.cart.length; i++) {
-  //         const courseId = user.cart[i];
-  //         await Course.findByIdAndUpdate(courseId, {
-  //           $inc: { totalStudents: 1 },
-  //         });
-  //         await User.findByIdAndUpdate(req.user._id, {
-  //           $push: { ownedCourse: { courseId: courseId } },
-  //         });
-  //       }
-  //       await User.findByIdAndUpdate(req.user._id, {
-  //         $set: { cart: [] },
-  //       });
-  //       return res.json({
-  //         success: true,
-  //         message: "Payment successful",
-  //       });
-  //     } else {
-  //       return next(new ErrorHandler(402, "Payment failed"));
-  //     }
-  //   } catch (e) {
-  //     next(e);
-  //   }
-  // },
+ 
   createOrder: async (req, res, next) => {
     try {
-      // const user = req.user;
+   
       const amount = parseInt(req.params.amount);
       const result =await amountSchema.validateAsync({amount})
       const price = result.amount
@@ -209,23 +144,13 @@ const paymentCtrl = {
 
       if (expectedSignature === req.body.signature) {
         user.wallet+=price;
-        // const cartCourseIndex = user.cart.indexOf(courseId);
-        // if (cartCourseIndex != -1) {
-        //   user.cart.splice(cartCourseIndex, 1);
-        //   await user.save();
-        // }
-        // await Course.findByIdAndUpdate(courseId, {
-        //   $inc: { totalStudents: 1 },
-        // });
-        // await User.findByIdAndUpdate(req.user._id, {
-        //   $push: { ownedCourse: { courseId: courseId } },
-        // });
+        await user.save();
         return res.json({
           success: true,
           message: "Payment successful",
         });
       } else {
-        // console.log("Payment failed");
+      
         return next(new ErrorHandler(400, "Payment failed"));
       }
     } catch (error) {

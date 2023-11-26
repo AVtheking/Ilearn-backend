@@ -266,51 +266,10 @@ const userCtrl = {
       next(e);
     }
   },
-  //   addToOC: async (req, res, next) => {
-  //     const courseId = req.params.courseId;
-  //     const lectureId = req.params.lectureId;
-  //     const courseIndex = user.ownedCourse.findIndex((course) =>
-  //       course.courseId.equals(courseId)
-  //     );
-
-  //     const user = await User.findById(req.user._id);
-  //     if (courseIndex == -1) {
-  //       user.ownedCourse.push({
-  //         courseId: courseId,
-  //         completedVideo: [],
-  //       });
-  //     }
-  //     await user.save();
-  //     res.json({
-  //       success: true,
-  //       message: "Course added to owned courses",
-  //     });
-  //   },
-  //   addlecture: async (req, res, next) => {
-  //     const lectureId = req.params.lectureId;
-  //     const courseId = req.params.courseId;
-  //     const user = req.user;
-  //     const courseIndex = user.ownedCourse.findIndex((course) =>
-  //       course.courseId.equals(courseId)
-  //     );
-  //     if (courseIndex != -1) {
-  //       const completedVideoIndex =
-  //         user.ownedCourse[courseIndex].completedVideo.indexOf(lectureId);
-  //       if (completedVideoIndex == -1) {
-  //         user.ownedCourse[courseIndex].completedVideo.push(lectureId);
-  //       }
-  //     }
-  //     await user.save();
-  //     res.json({
-  //       message: "lecture added to owned courses",
-  //       data: {
-  //         completedVideo: user.ownedCourse[courseIndex].completedVideo,
-  //       },
-  //     });
-  //   },
+ 
   getCompletedCourse: async (req, res, next) => {
     try {
-      //   const user = req.user;
+     
       const user = await User.findById(req.user._id).populate({
         path: "completedCourse",
         select:

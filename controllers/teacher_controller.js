@@ -3,7 +3,7 @@ const { User, Course, Video, Category } = require("../models");
 const { getVideoDurationInSeconds } = require("get-video-duration");
 const fs = require("fs");
 const Queue = require("bull");
-// const videoConversionQueue = new Queue("videoConversion");
+
 const redisConfig = {
   host: "127.0.0.1",
   port: 6379,
@@ -109,27 +109,8 @@ const teacherCtrl = {
     }
   },
 
-  // addCategory: async (req, res, next) => {
-  //   try {
+ 
 
-  //     const result = await CategorySchema.validateAsync(req.body);
-  //     const category = result.category;
-  //     const existingCategory = await Category.findOne({ category });
-  //     if (existingCategory) {
-  //       return next(new ErrorHandler(400, "This Category already exists"));
-  //     }
-  //     let newCategory = new Category({
-  //       name: category,
-  //     });
-  //     newCategory = await newCategory.save();
-  //     res.json({
-  //       success: true,
-  //       message: "A new category has been created",
-  //     });
-  //   } catch (e) {
-  //     next(e);
-  //   }
-  // },
   createCourse: async (req, res, next) => {
     try {
       const result = await CourseSchema.validateAsync(req.body);
@@ -223,13 +204,7 @@ const teacherCtrl = {
         return next(new ErrorHandler(400, "You are not the creater of course"));
       }
 
-      // res.json({
-      //   success: true,
-      //   message: "Video uploaded successfully",
-      //   data: {
-      //     duration: course.duration,
-      //   },
-      // });
+    
       inputFilePath = videoFilePath;
       inputFileName = path.basename(inputFilePath, path.extname(inputFilePath));
 
@@ -275,7 +250,7 @@ const teacherCtrl = {
       // });
       // await Promise.all(conversionPromise);
 
-      // console.log("Video conversion completed");
+
       videoConversionQueue.process(async (job) => {
         const {
           resolutions,
@@ -294,18 +269,13 @@ const teacherCtrl = {
             resolution.name
           }${path.extname(inputFilePath)}`;
           return createConversionWorker(resolution, inputFilePath, outputPath);
-          // return videoConversionQueue.add(conversionData);
-          // return createConversionWorker(resolution, inputFilePath, outputPath);
+         
         });
         await Promise.all(conversionPromise);
 
         console.log("Video conversion completed");
 
-        // await createConversionWorker(resolution, inputFilePath, outputPath);
-        // console.log(
-        //   `Video conversion completed for resolution: ${resolution.name}`
-        // );
-
+     
         let video = new Video({
           videoTitle: videotitle,
           videoUrl: videoFilePath,
@@ -321,25 +291,22 @@ const teacherCtrl = {
           videoDuration: du,
         });
         video = await video.save();
-        // console.log(video);
-        // console.log("Video saved successfully");
+    
         const coursess = await Course.findById(courseId);
         await coursess.videos.push({
           video: video._id,
           note: noteFilePath,
         });
-        // console.log(coursess);
-        // console.log("Video pushed to course");
-        // coursess.duration += du;
-        // console.log("Duration updated");
+     
         coursess = await coursess.save();
         return { status: "completed" };
-        // console.log("Video uploaded successfully");
+      
+        .3
       });
     } catch (e) {
       if (noteFilePath) {
         fs.unlinkSync(noteFilePath);
-        // console.log("note file deleted");
+      
       }
       if (videoFilePath) {
         fs.unlinkSync(videoFilePath);
@@ -370,7 +337,9 @@ const teacherCtrl = {
       if (course.isPublished) {
         return next(new ErrorHandler(400, "Course is already published"));
       }
-
+      if (course.videos.length == 0) {
+        return next(new ErrorHandler(400, "Please upload some videos"));
+      }
       let user = req.user;
       if (!user.is_certified_educator) {
         if (price != 0) {
@@ -388,7 +357,7 @@ const teacherCtrl = {
       course.isPublished = true;
       course.price = price.toString();
       course.duration = duration;
-      course.preview = course.videos[0].video;
+      course.preview = course.videos[0]?course.videos[0].video:null;
       await course.save();
 
       let existingCategory = await Category.findOne({ name: category });
@@ -457,9 +426,7 @@ const teacherCtrl = {
         fs.unlinkSync("public/thumbnail" + "/" + req.file.filename);
       }
       course.thumbnail = "thumbnail" + "/" + req.file.filename;
-      // await Course.findByIdAndUpdate(courseId, {
-      //   thumbnail: "public/thumbnail" + "/" + req.file.filename,
-      // });
+    
       await course.save();
       res.json({
         success: true,
@@ -534,69 +501,7 @@ const teacherCtrl = {
       next(e);
     }
   },
-  // addlecture: async (req, res, next) => {
-  //   let videoFilePath, inputFilePath, inputFileName;
-  //   try {
-  //     const courseId = req.params.courseId;
-  //     if (!req.file) {
-  //       return next(new ErrorHandler(400, "Please upload a video file"));
-  //     }
-  //     const result = await videoSchema.validateAsync(req.body);
-  //     const videoTitle = result.videoTitle;
-  //     videoFilePath = "public/course_videos" + "/" + req.file.filename;
-  //     let course = await Course.findById(courseId);
-  //     if (!course) {
-  //       fs.unlinkSync(videoFilePath);
-  //       return next(new ErrorHandler(404, "Course not found"));
-  //     }
-  //     if (!course.createdBy.equals(req.user._id)) {
-  //       fs.unlinkSync(videoFilePath);
-  //       return next(
-  //         new ErrorHandler(400, "You are not the creater of the course")
-  //       );
-  //     }
-  //     const conversionPromise = resolutions.map((resolution) => {
-  //       inputFilePath = videoFilePath;
-  //       inputFileName = path.basename(
-  //         inputFilePath,
-  //         path.extname(inputFilePath)
-  //       );
-  //       const outputPath = `public/course_videos/${inputFileName}-${
-  //         resolution.name
-  //       }${path.extname(inputFilePath)}`;
-  //       return createConversionWorker(resolution, inputFilePath, outputPath);
-  //     });
-  //     await Promise.all(conversionPromise);
-  //     console.log("Video conversion completed");
-  //     const du = await getVideoDurationInSeconds(videoFilePath);
-  //     let video = new Video({
-  //       videoTitle,
-  //       videoUrl: videoFilePath,
-  //       videoUrl_144p: `public/course_videos/${inputFileName}-144p${path.extname(
-  //         inputFilePath
-  //       )}`,
-  //       videoUrl_360p: `public/course_videos/${inputFileName}-360p${path.extname(
-  //         inputFilePath
-  //       )}`,
-  //       videoUrl_720p: `public/course_videos/${inputFileName}-720p${path.extname(
-  //         inputFilePath
-  //       )}`,
-  //       videoDuration: du,
-  //     });
-  //     video = await video.save();
-  //     course.videos.push(video._id);
-  //     course = await course.save();
-  //     res.json({
-  //       success: true,
-  //       message: "Lecture added successfully",
-  //     });
-  //   } catch (e) {
-  //     if (videoFilePath) {
-  //       fs.unlinkSync(videoFilePath);
-  //     }
-  //     next(e);
-  //   }
-  // },
+ 
   removeLecture: async (req, res, next) => {
     try {
       const courseId = req.params.courseId;
@@ -658,7 +563,7 @@ const teacherCtrl = {
       const pageSize = parseInt(req.query.pagesize);
       const skip = (page - 1) * pageSize;
       const query = req.query.teacher;
-      // console.log(query);
+    
       const teachers = await User.aggregate([
         {
           $search: {
