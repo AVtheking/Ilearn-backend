@@ -654,14 +654,13 @@ const courseCtrl = {
       if (!course) {
         return next(new ErrorHandler(404, "Course not found"));
       }
-      // const totalPage = await course.reviews.countDocuments();
-      // const totalPages = Math.ceil(totalPage / pageSize);
+      
       const paginatedReviews = course.reviews.slice(
         startIndex,
         startIndex + pageSize
       );
       const totalPages = Math.ceil(course.reviews.length / pageSize);
-      // console.log(course.reviews.length);
+ 
       res.json({
         success: true,
         message: "List of reviews",
