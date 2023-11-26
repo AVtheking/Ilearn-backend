@@ -54,8 +54,10 @@ const paymentCtrl = {
     try {
       const user = req.user;
       const amount = parseInt(req.params.amount);
-      const result = amountSchema.validateAsync(amount)
+      console.log(amount)
+      const result = await amountSchema.validateAsync({amount})
       const price = result.amount
+      console.log(price)
       if (user.cart.length == 0) {
         return next(new ErrorHandler(404, "No course in cart"));
       }
@@ -156,7 +158,7 @@ const paymentCtrl = {
     try {
       // const user = req.user;
       const amount = parseInt(req.params.amount);
-      const result = amountSchema.validateAsync(amount)
+      const result =await amountSchema.validateAsync({amount})
       const price = result.amount
       const razorpayInstance = new Razorpay({
         key_id: process.env.KEY_ID,
@@ -189,7 +191,7 @@ const paymentCtrl = {
   checkPayment: async (req, res, next) => {
     try {
       const amount = parseInt(req.params.amount);
-      const result =amountSchema.validateAsync(amount)
+      const result =await amountSchema.validateAsync({amount})
       const price = result.amount
       
       const user = req.user;

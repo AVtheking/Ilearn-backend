@@ -96,7 +96,7 @@ const courseCtrl = {
       const course = await Course.findById(courseId, {
         isPublished: true,
         isPublished: 0,
-        reviews: 0,
+
         __v: 0,
         ratings: 0,
       })
@@ -113,6 +113,10 @@ const courseCtrl = {
           path: "preview",
           select:
             "_id videoTitle videoUrl videoDuration videoUrl_144p videoUrl_360p videoUrl_720p",
+        })
+        .populate({
+          path: "reviews.user",
+          select: "_id username name profileimg",
         });
 
       if (!course) {
@@ -122,6 +126,7 @@ const courseCtrl = {
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
       );
+
       const cartIdIndex = user.cart.findIndex((course) =>
         course.equals(courseId)
       );
@@ -215,6 +220,7 @@ const courseCtrl = {
             duration: 1,
             totalStudents: 1,
             category: 1,
+            weightedRating: 1,
             rating: 1,
             thumbnail: 1,
             createdAt: 1,
@@ -289,7 +295,7 @@ const courseCtrl = {
         .populate({
           path: "courses",
           select:
-            "_id title description category price thumbnail rating duration createdAt updatedAt ",
+            "_id title description category price thumbnail rating weightedRating duration createdAt updatedAt ",
           options: {
             limit: limit ? limit : pageSize,
           },
@@ -323,7 +329,7 @@ const courseCtrl = {
         .sort({ count: -1 })
         .select({ search: 1, _id: 0 })
         .limit(5);
-      
+
       res.json({
         success: true,
         message: "List of popular searches",
@@ -454,7 +460,7 @@ const courseCtrl = {
             thumbnail: 1,
             createdAt: 1,
             updatedAt: 1,
-            weightedRating:1,
+            weightedRating: 1,
             createdBy: { _id: 1, username: 1, name: 1 },
           },
         },
