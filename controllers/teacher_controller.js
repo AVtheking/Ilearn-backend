@@ -186,6 +186,11 @@ const teacherCtrl = {
       const videofile = req.files.video;
       videoConversionQueue = new Queue("videoConversion", {
         redis: redisConfig,
+        limiter: {
+          max: 1,
+          duration: 1000,
+        },
+        concurrency: 2
       });
 
       let course = await Course.findById(courseId);
@@ -328,6 +333,7 @@ const teacherCtrl = {
         // coursess.duration += du;
         // console.log("Duration updated");
         coursess = await coursess.save();
+        return { status: "completed" };
         // console.log("Video uploaded successfully");
       });
     } catch (e) {
