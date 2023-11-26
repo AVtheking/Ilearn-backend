@@ -46,7 +46,7 @@ app.use(teacherRouter, errorMiddleware);
 app.use(courseRouter, errorMiddleware);
 app.use(userRouter, errorMiddleware);
 app.use(paymentRouter, errorMiddleware);
-app.use(commentRouter, errorMiddleware);
+
 
 const PORT = process.env.PORT || 5000;
 

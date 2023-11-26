@@ -5,5 +5,5 @@ module.exports.Video = require("./video");
 module.exports.Category = require("./category");
 module.exports.Message = require("./message");
 module.exports.Review = require("./review");
-module.exports.Comment = require("./comment");
+
 module.exports.PopularSearch = require("./popular_search");
