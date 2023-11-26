@@ -56,7 +56,7 @@ initializedSocket(server);
 mongoose.connect(process.env.DB).then(() => {
   console.log("connection is successful");
   server.listen(PORT, "0.0.0.0", () => {
-    // Category.deleteMany({}).then(() => {
+    // Course.deleteMany({isPublished:false}).then(() => {
     //   console.log("deleted all courses");
     // }
     // );

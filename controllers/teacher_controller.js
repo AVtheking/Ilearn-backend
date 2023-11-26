@@ -190,7 +190,7 @@ const teacherCtrl = {
           max: 1,
           duration: 1000,
         },
-        concurrency: 2
+        concurrency: 2,
       });
 
       let course = await Course.findById(courseId);
@@ -453,7 +453,9 @@ const teacherCtrl = {
       if (!req.file) {
         return next(new ErrorHandler(400, "Please upload a file"));
       }
-      fs.unlinkSync("public/thumbnail" + "/" + req.file.filename);
+      if (fs.existsSync("public" + "/" + course.thumbnail)) {
+        fs.unlinkSync("public/thumbnail" + "/" + req.file.filename);
+      }
       course.thumbnail = "thumbnail" + "/" + req.file.filename;
       // await Course.findByIdAndUpdate(courseId, {
       //   thumbnail: "public/thumbnail" + "/" + req.file.filename,
@@ -493,23 +495,35 @@ const teacherCtrl = {
       const courseIndex = req.user.createdCourse.indexOf(courseId);
       req.user.createdCourse.splice(courseIndex, 1);
       await req.user.save();
-      fs.unlinkSync("public" + "/" + course.thumbnail);
+      if (fs.existsSync("public" + "/" + course.thumbnail)) {
+        fs.unlinkSync("public" + "/" + course.thumbnail);
+      }
       for (const videoId of course.videos) {
         const video = await Video.findById(videoId.video);
 
         if (video) {
           await Video.findByIdAndDelete(videoId.video);
-          fs.unlinkSync(video.videoUrl);
-          fs.unlinkSync(video.videoUrl_144p);
-          fs.unlinkSync(video.videoUrl_360p);
-          fs.unlinkSync(video.videoUrl_720p);
+          if (fs.existsSync(video.videoUrl)) {
+            fs.unlinkSync(video.videoUrl);
+          }
+          if (fs.existsSync(video.videoUrl_144p)) {
+            fs.unlinkSync(video.videoUrl_144p);
+          }
+          if (fs.existsSync(video.videoUrl_360p)) {
+            fs.unlinkSync(video.videoUrl_360p);
+          }
+          if (fs.existsSync(video.videoUrl_720p)) {
+            fs.unlinkSync(video.videoUrl_720p);
+          }
         }
       }
       for (const notes of course.videos) {
         if (notes.note == null) {
           continue;
         }
-        fs.unlinkSync(notes.note);
+        if (fs.existsSync(notes.note)) {
+          fs.unlinkSync(notes.note);
+        }
       }
       await Course.findByIdAndDelete(courseId);
       res.json({
@@ -604,7 +618,9 @@ const teacherCtrl = {
       }
       const note = course.videos[videoIndex].note;
       if (note != null) {
-        fs.unlinkSync(note);
+        if (fs.existsSync(note)) {
+          fs.unlinkSync(note);
+        }
       }
       const video = await Video.findById(lectureId);
 
@@ -613,10 +629,18 @@ const teacherCtrl = {
           $pull: { videos: { video: lectureId } },
         });
 
-        fs.unlinkSync(video.videoUrl);
-        fs.unlinkSync(video.videoUrl_144p);
-        fs.unlinkSync(video.videoUrl_360p);
-        fs.unlinkSync(video.videoUrl_720p);
+        if (fs.existsSync(video.videoUrl)) {
+          fs.unlinkSync(video.videoUrl);
+        }
+        if (fs.existsSync(video.videoUrl_144p)) {
+          fs.unlinkSync(video.videoUrl_144p);
+        }
+        if (fs.existsSync(video.videoUrl_360p)) {
+          fs.unlinkSync(video.videoUrl_360p);
+        }
+        if (fs.existsSync(video.videoUrl_720p)) {
+          fs.unlinkSync(video.videoUrl_720p);
+        }
         await Video.findByIdAndDelete(lectureId);
       }
 

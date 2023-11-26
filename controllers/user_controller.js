@@ -38,7 +38,7 @@ const userCtrl = {
       user.profileimg = null;
       await user.save();
       if (path != null) {
-        if (fs.exists("public" + "/" + path)) {
+        if (fs.existsSync("public" + "/" + path)) {
           fs.unlinkSync("public" + "/" + path);
         }
       }
