@@ -8,8 +8,6 @@ const {
   deleteReviewSchema,
 } = require("../utils/validator");
 
-
-
 // const redisClient = redis.createClient();
 // redisClient.connect().catch(console.error);
 
@@ -155,10 +153,10 @@ const courseCtrl = {
           course,
           in_cart,
           in_wishlist,
-          owned
+          owned,
         },
       };
-     
+
       if (courseIdIndex != -1) {
         owned = true;
         const completedVideo =
@@ -394,7 +392,6 @@ const courseCtrl = {
         ? result[0].totalCount[0].count
         : 0;
 
-      
       const totalPages = Math.ceil(totalCount / pageSize);
 
       res.json({
@@ -495,16 +492,16 @@ const courseCtrl = {
         return next(new ErrorHandler(400, "Course is not published yet"));
       }
       const user = req.user;
-    
+
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
-        course.courseId.equals(courseId)  
-      )
+        course.courseId.equals(courseId)
+      );
       if (courseIdIndex == -1) {
         return next(
           new ErrorHandler(400, "You have not enrolled in this course")
         );
       }
-        
+
       const reviewIndex = course.reviews.findIndex((review) =>
         review.user.equals(req.user._id)
       );
@@ -573,7 +570,7 @@ const courseCtrl = {
           },
         },
       ]);
-     
+
       user.educator_rating = educator_courses[0].avgRating;
       if (user.educator_rating >= 2.5) {
         user.is_certified_educator = true;
@@ -584,8 +581,8 @@ const courseCtrl = {
         success: true,
         message: "Course rated successfully",
         data: {
-          review
-        }
+          review,
+        },
       });
     } catch (error) {
       next(error);
@@ -609,7 +606,9 @@ const courseCtrl = {
           new ErrorHandler(400, "You have not enrolled in this course")
         );
       }
-      const notesIndex = course.notes.indexOf(path);
+      const notesIndex = course.videos.findIndex((video) =>
+        video.note.equals(path)
+      );
       if (notesIndex == -1) {
         return next(new ErrorHandler(400, "No notes found"));
       }
@@ -663,13 +662,13 @@ const courseCtrl = {
       if (!course) {
         return next(new ErrorHandler(404, "Course not found"));
       }
-      
+
       const paginatedReviews = course.reviews.slice(
         startIndex,
         startIndex + pageSize
       );
       const totalPages = Math.ceil(course.reviews.length / pageSize);
- 
+
       res.json({
         success: true,
         message: "List of reviews",
