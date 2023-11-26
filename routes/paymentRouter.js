@@ -10,6 +10,6 @@ paymentRouter.post("/createOrder/:amount", auth, paymentCtrl.createOrder);
 // paymentRouter.post("/createOrderCart/:amount", auth, paymentCtrl.createOrderCart);
 // paymentRouter.post("/checkPaymentCart", auth, paymentCtrl.checkPaymentCart);
 
-paymentRouter.post("/checkPayment/:courseId",auth, paymentCtrl.checkPayment);
+paymentRouter.post("/checkPayment/:amount",auth, paymentCtrl.checkPayment);
 
 module.exports = paymentRouter;
