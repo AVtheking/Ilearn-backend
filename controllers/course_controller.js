@@ -122,6 +122,13 @@ const courseCtrl = {
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
       }
+      await PopularSearch.findOneAndUpdate(
+        {
+          search: course.title,
+        },
+        { $inc: { count: 1 } },
+        { upsert: true }
+      );
       const user = req.user;
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
@@ -349,13 +356,7 @@ const courseCtrl = {
       const startIndex = (page - 1) * pageSize;
 
       const searchquery = req.query.coursetitle;
-      await PopularSearch.findOneAndUpdate(
-        {
-          search: searchquery,
-        },
-        { $inc: { count: 1 } },
-        { upsert: true }
-      );
+
       const result = await Course.aggregate([
         {
           $search: {

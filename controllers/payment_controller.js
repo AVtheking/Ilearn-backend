@@ -15,6 +15,9 @@ const paymentCtrl = {
       if (!course) {
         return next(new ErrorHandler(400, "No course found"));
       }
+      if (course.isPublished == false) {
+        return next(new ErrorHandler(400, "Course is not published"));
+      }
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
       );
