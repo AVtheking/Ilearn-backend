@@ -3,7 +3,11 @@ const { User, Course, Video, Category } = require("../models");
 const { getVideoDurationInSeconds } = require("get-video-duration");
 const fs = require("fs");
 const Queue = require("bull");
-const videoConversionQueue = new Queue("videoConversion");
+// const videoConversionQueue = new Queue("videoConversion");
+const redisConfig = {
+  host: "127.0.0.1",
+  port: 6379,
+};
 const path = require("path");
 
 const {
@@ -180,7 +184,9 @@ const teacherCtrl = {
       const videotitle = result2.videoTitle;
       const notesfile = req.files.notes;
       const videofile = req.files.video;
-      videoConversionQueue = new Queue("videoConversion");
+      videoConversionQueue = new Queue("videoConversion", {
+        redis: redisConfig,
+      });
 
       let course = await Course.findById(courseId);
       if (notesfile) {
@@ -221,11 +227,11 @@ const teacherCtrl = {
       // });
       inputFilePath = videoFilePath;
       inputFileName = path.basename(inputFilePath, path.extname(inputFilePath));
-      
+
       const du = await getVideoDurationInSeconds(videoFilePath);
       course.duration += du;
       await course.save();
-     await videoConversionQueue.add({
+      await videoConversionQueue.add({
         resolutions,
         inputFilePath,
 
@@ -233,16 +239,16 @@ const teacherCtrl = {
         videotitle,
         inputFileName,
         noteFilePath,
-       courseId,
-        du
-     });
-     res.json({
-      success: true,
-      message: "Video uploaded successfully",
-      data: {
-        duration: course.duration,
-      },
-    });
+        courseId,
+        du,
+      });
+      res.json({
+        success: true,
+        message: "Video uploaded successfully",
+        data: {
+          duration: course.duration,
+        },
+      });
       //Video Conversion using worker threads
       // const conversionPromise = resolutions.map((resolution) => {
       //   inputFilePath = videoFilePath;
@@ -274,7 +280,7 @@ const teacherCtrl = {
           inputFileName,
           noteFilePath,
           courseId,
-          du
+          du,
         } = job.data;
         console.log(`Processing video conversion for resolution`);
 
@@ -294,7 +300,7 @@ const teacherCtrl = {
         // console.log(
         //   `Video conversion completed for resolution: ${resolution.name}`
         // );
-        
+
         let video = new Video({
           videoTitle: videotitle,
           videoUrl: videoFilePath,
@@ -312,23 +318,22 @@ const teacherCtrl = {
         video = await video.save();
         // console.log(video);
         // console.log("Video saved successfully");
-        const coursess=await Course.findById(courseId);
+        const coursess = await Course.findById(courseId);
         await coursess.videos.push({
           video: video._id,
           note: noteFilePath,
         });
-        console.log(coursess);
+        // console.log(coursess);
         // console.log("Video pushed to course");
         // coursess.duration += du;
         // console.log("Duration updated");
         coursess = await coursess.save();
         // console.log("Video uploaded successfully");
       });
-    
     } catch (e) {
       if (noteFilePath) {
         fs.unlinkSync(noteFilePath);
-        console.log("note file deleted");
+        // console.log("note file deleted");
       }
       if (videoFilePath) {
         fs.unlinkSync(videoFilePath);
@@ -375,7 +380,7 @@ const teacherCtrl = {
       user.save();
 
       course.isPublished = true;
-      course.price = price;
+      course.price = price.toString();
       course.duration = duration;
       course.preview = course.videos[0].video;
       await course.save();

@@ -63,7 +63,7 @@ const userIdSchema = Joi.object({
   userId: Joi.string().required(),
 });
 const publishCourseSchema = Joi.object({
-  price: Joi.string().required(),
+  price: Joi.number().required(),
   duration: Joi.number().required(),
   category: Joi.string()
     .valid(
@@ -100,6 +100,9 @@ const deleteReviewSchema = Joi.object({
   courseId: Joi.string().required(),
   reviewId: Joi.string().required(),
 });
+const amountSchema = Joi.object({
+  amount: Joi.number().required(),
+});
 
 module.exports = {
   authSchema,
@@ -114,4 +117,5 @@ module.exports = {
   editReviewSchema,
   deleteReviewSchema,
   userIdSchema,
+  amountSchema
 };
