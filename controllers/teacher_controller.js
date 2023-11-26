@@ -2,7 +2,8 @@ const { ErrorHandler } = require("../middlewares/error");
 const { User, Course, Video, Category } = require("../models");
 const { getVideoDurationInSeconds } = require("get-video-duration");
 const fs = require("fs");
-
+const Queue = require("bull");
+const videoConversionQueue = new Queue("videoConversion");
 const path = require("path");
 
 const {
@@ -15,8 +16,8 @@ const {
 const createConversionWorker = require("../utils/videoConverter");
 const resolutions = [
   { name: "144p", width: 256, height: 144 },
-  // { name: "360p", width: 640, height: 360 },
-  // { name: "720p", width: 1280, height: 720 },
+  { name: "360p", width: 640, height: 360 },
+  { name: "720p", width: 1280, height: 720 },
 ];
 
 const teacherCtrl = {
@@ -168,6 +169,7 @@ const teacherCtrl = {
       videoFilePath,
       inputFilePath,
       inputFileName;
+    let videoConversionQueue;
     try {
       const courseid = req.params.courseId;
 
@@ -178,6 +180,7 @@ const teacherCtrl = {
       const videotitle = result2.videoTitle;
       const notesfile = req.files.notes;
       const videofile = req.files.video;
+      videoConversionQueue = new Queue("videoConversion");
 
       let course = await Course.findById(courseId);
       if (notesfile) {
@@ -208,64 +211,120 @@ const teacherCtrl = {
         fs.unlinkSync(videoFilePath);
         return next(new ErrorHandler(400, "You are not the creater of course"));
       }
-      // if (course.isPublished) {
-      //   if (noteFilePath != null) {
-      //     fs.unlinkSync(noteFilePath);
-      //   }
-      //   fs.unlinkSync(videoFilePath);
-      //   return next(new ErrorHandler(400, "Course is already published"));
-      // }
 
-
-      //Video Conversion using worker threads
-      const conversionPromise = resolutions.map((resolution) => {
-        inputFilePath = videoFilePath;
-        inputFileName = path.basename(
-          inputFilePath,
-          path.extname(inputFilePath)
-        );
-
-        const outputPath = `public/course_videos/${inputFileName}-${
-          resolution.name
-        }${path.extname(inputFilePath)}`;
-        return createConversionWorker(resolution, inputFilePath, outputPath);
-      });
-      await Promise.all(conversionPromise);
-      console.log("Video conversion completed");
-
-      //calculate video duration
+      // res.json({
+      //   success: true,
+      //   message: "Video uploaded successfully",
+      //   data: {
+      //     duration: course.duration,
+      //   },
+      // });
+      inputFilePath = videoFilePath;
+      inputFileName = path.basename(inputFilePath, path.extname(inputFilePath));
+      
       const du = await getVideoDurationInSeconds(videoFilePath);
-
-      let video = new Video({
-        videoTitle: videotitle,
-        videoUrl: videoFilePath,
-        videoUrl_144p: `public/course_videos/${inputFileName}-144p${path.extname(
-          inputFilePath
-        )}`,
-        videoUrl_360p: `public/course_videos/${inputFileName}-360p${path.extname(
-          inputFilePath
-        )}`,
-        videoUrl_720p: `public/course_videos/${inputFileName}-720p${path.extname(
-          inputFilePath
-        )}`,
-        videoDuration: du,
-      });
-      video = await video.save();
-      course.videos.push({
-        video: video._id,
-        note: noteFilePath,
-      });
       course.duration += du;
+      await course.save();
+     await videoConversionQueue.add({
+        resolutions,
+        inputFilePath,
 
-      course = await course.save();
+        videoFilePath,
+        videotitle,
+        inputFileName,
+        noteFilePath,
+       courseId,
+        du
+     });
+     res.json({
+      success: true,
+      message: "Video uploaded successfully",
+      data: {
+        duration: course.duration,
+      },
+    });
+      //Video Conversion using worker threads
+      // const conversionPromise = resolutions.map((resolution) => {
+      //   inputFilePath = videoFilePath;
+      //   inputFileName = path.basename(
+      //     inputFilePath,
+      //     path.extname(inputFilePath)
+      //   );
 
-      res.json({
-        success: true,
-        message: "Video uploaded successfully",
-        data: {
-          duration: course.duration,
-        },
+      //   const outputPath = `public/course_videos/${inputFileName}-${
+      //     resolution.name
+      //   }${path.extname(inputFilePath)}`;
+      //   const conversionData = {
+      //     resolution,
+      //     inputFilePath,
+      //     outputPath,
+      //   };
+      //   return videoConversionQueue.add(conversionData);
+      //   // return createConversionWorker(resolution, inputFilePath, outputPath);
+      // });
+      // await Promise.all(conversionPromise);
+
+      // console.log("Video conversion completed");
+      videoConversionQueue.process(async (job) => {
+        const {
+          resolutions,
+          inputFilePath,
+          videoFilePath,
+          videotitle,
+          inputFileName,
+          noteFilePath,
+          courseId,
+          du
+        } = job.data;
+        console.log(`Processing video conversion for resolution`);
+
+        const conversionPromise = resolutions.map((resolution) => {
+          const outputPath = `public/course_videos/${inputFileName}-${
+            resolution.name
+          }${path.extname(inputFilePath)}`;
+          return createConversionWorker(resolution, inputFilePath, outputPath);
+          // return videoConversionQueue.add(conversionData);
+          // return createConversionWorker(resolution, inputFilePath, outputPath);
+        });
+        await Promise.all(conversionPromise);
+
+        console.log("Video conversion completed");
+
+        // await createConversionWorker(resolution, inputFilePath, outputPath);
+        // console.log(
+        //   `Video conversion completed for resolution: ${resolution.name}`
+        // );
+        
+        let video = new Video({
+          videoTitle: videotitle,
+          videoUrl: videoFilePath,
+          videoUrl_144p: `public/course_videos/${inputFileName}-144p${path.extname(
+            inputFilePath
+          )}`,
+          videoUrl_360p: `public/course_videos/${inputFileName}-360p${path.extname(
+            inputFilePath
+          )}`,
+          videoUrl_720p: `public/course_videos/${inputFileName}-720p${path.extname(
+            inputFilePath
+          )}`,
+          videoDuration: du,
+        });
+        video = await video.save();
+        // console.log(video);
+        // console.log("Video saved successfully");
+        const coursess=await Course.findById(courseId);
+        await coursess.videos.push({
+          video: video._id,
+          note: noteFilePath,
+        });
+        console.log(coursess);
+        // console.log("Video pushed to course");
+        // coursess.duration += du;
+        // console.log("Duration updated");
+        coursess = await coursess.save();
+        // console.log("Video uploaded successfully");
       });
+    
     } catch (e) {
       if (noteFilePath) {
         fs.unlinkSync(noteFilePath);

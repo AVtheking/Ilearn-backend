@@ -13,7 +13,9 @@ const userCtrl = {
       if (!req.file) return next(new ErrorHandler(400, "Please upload a file"));
       const user = req.user;
       if (user.profileimg != null) {
-        fs.unlinkSync("public" + "/" + user.profileimg);
+        if (fs.existsSync("public" + "/" + user.profileimg)) {
+          fs.unlinkSync("public" + "/" + user.profileimg);
+        }
       }
       user.profileimg = `thumbnail` + "/" + req.file.filename;
       await user.save();
@@ -36,7 +38,9 @@ const userCtrl = {
       user.profileimg = null;
       await user.save();
       if (path != null) {
-        fs.unlinkSync("public" + "/" + path);
+        if (fs.exists("public" + "/" + path)) {
+          fs.unlinkSync("public" + "/" + path);
+        }
       }
       res.json({
         success: true,
