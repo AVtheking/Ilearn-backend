@@ -96,7 +96,7 @@ const courseCtrl = {
       const course = await Course.findById(courseId, {
         isPublished: true,
         isPublished: 0,
-        reviews: 0,
+       
         __v: 0,
         ratings: 0,
       })
@@ -122,13 +122,14 @@ const courseCtrl = {
       const courseIdIndex = user.ownedCourse.findIndex((course) =>
         course.courseId.equals(courseId)
       );
+
       const cartIdIndex = user.cart.findIndex((course) =>
         course.equals(courseId)
       );
       const wishlistIdIndex = user.wishlist.findIndex((course) =>
         course.equals(courseId)
       );
-
+      
       if (cartIdIndex != -1) {
         in_cart = true;
       }
@@ -215,6 +216,7 @@ const courseCtrl = {
             duration: 1,
             totalStudents: 1,
             category: 1,
+            weightedRating:1,
             rating: 1,
             thumbnail: 1,
             createdAt: 1,
@@ -289,7 +291,7 @@ const courseCtrl = {
         .populate({
           path: "courses",
           select:
-            "_id title description category price thumbnail rating duration createdAt updatedAt ",
+            "_id title description category price thumbnail rating weightedRating duration createdAt updatedAt ",
           options: {
             limit: limit ? limit : pageSize,
           },
