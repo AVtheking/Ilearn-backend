@@ -8,7 +8,6 @@ const {
   authRouter,
   teacherRouter,
   courseRouter,
-  commentRouter,
   userRouter,
   paymentRouter,
 } = require("./routes");
