@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const videoSchema = new mongoose.Schema({
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+  },
+  
   videoTitle: {
     type: String,
     required: true,
@@ -22,6 +27,9 @@ const videoSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  note: {
+    type:String
+  }
 });
 const Video = new mongoose.model("Video", videoSchema);
 module.exports = Video;

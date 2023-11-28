@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema(
   {
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

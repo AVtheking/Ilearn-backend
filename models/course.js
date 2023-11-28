@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const reviewSchema = require("./review");
+// const reviewSchema = require("./review");
 const courseSchema = new mongoose.Schema(
   {
     title: {
@@ -20,17 +20,17 @@ const courseSchema = new mongoose.Schema(
       ref: "User",
     },
 
-    videos: [
-      {
-        video: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Video",
-        },
-        note: {
-          type: String,
-        },
-      },
-    ],
+    // videos: [
+    //   {
+    //     video: {
+    //       type: mongoose.Schema.Types.ObjectId,
+    //       ref: "Video",
+    //     },
+    //     note: {
+    //       type: String,
+    //     },
+    //   },
+    // ],
 
     category: {
       type: String,
@@ -62,17 +62,17 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    preview: [
+    preview: 
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Video",
       },
-    ],
+    
     isPublished: {
       type: Boolean,
       default: false,
     },
-    reviews: [reviewSchema],
+    // reviews: [reviewSchema],
     weightedRating: {
       type: Number,
       default: 0,

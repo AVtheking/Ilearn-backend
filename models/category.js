@@ -4,14 +4,14 @@ const categorySchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
   },
-  courses: [
+  courses: 
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
     },
-  ],
+  
 });
 const Category = new mongoose.model("Category", categorySchema);
 module.exports = Category;

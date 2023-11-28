@@ -39,44 +39,44 @@ const userSchema = new mongoose.Schema({
   profileimg: {
     type: String,
   },
-  createdCourse: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-    },
-  ],
-  ownedCourse: [
-    {
-      courseId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Course",
-      },
-      completedVideo: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Video",
-        },
-      ],
-    },
-  ],
-  cart: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-    },
-  ],
-  wishlist: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-    },
-  ],
-  completedCourse: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-    },
-  ],
+  // createdCourse: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Course",
+  //   },
+  // ],
+  // ownedCourse: [
+  //   {
+  //     courseId: {
+  //       type: mongoose.Schema.Types.ObjectId,
+  //       ref: "Course",
+  //     },
+  //     completedVideo: [
+  //       {
+  //         type: mongoose.Schema.Types.ObjectId,
+  //         ref: "Video",
+  //       },
+  //     ],
+  //   },
+  // ],
+  // cart: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Course",
+  //   },
+  // ],
+  // wishlist: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Course",
+  //   },
+  // ],
+  // completedCourse: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Course",
+  //   },
+  // ],
   wallet: {
     type: Number,
     default: 0,
@@ -90,8 +90,8 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
 });
-userSchema.path("createdCourse").default(() => []);
-userSchema.path("ownedCourse").default(() => []);
+// userSchema.path("createdCourse").default(() => []);
+// userSchema.path("ownedCourse").default(() => []);
 
 const User = new mongoose.model("User", userSchema);
 module.exports = User;
